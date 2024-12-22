@@ -1,0 +1,10 @@
+#!/user/bin/env zsh
+#- nosh util:nosh-configs .nosh.version -- gets data from nosh configs
+
+# Get keys from the etc version of nosh.yml
+
+nosh sanity:yq
+Command="$1"
+[[ -z "$Command" ]] && Command=".nosh.version"
+scrawl debug nosh.configs "Found command: $Command"
+cat $(whither nosh-configs) | yq .

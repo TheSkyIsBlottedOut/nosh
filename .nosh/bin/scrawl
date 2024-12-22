@@ -2,8 +2,8 @@
 #- scrawl [level] [event] [message]
 #-   Log a message to the console and optionally to a file, based on profile settings.
 
-[[ -z "$Nosh__LogLevel_Console" ]] && export Nosh__LogLevel_Console="info"
-[[ -z "$Nosh__LogLevel_File" ]] && export Nosh__LogLevel_File="info"
+[[ -z "$Nosh_LogLevel_Console" ]] && export Nosh_LogLevel_Console="info"
+[[ -z "$Nosh_LogLevel_File" ]] && export Nosh_LogLevel_File="info"
 KnownLevels=("trace" "debug" "info" "warn" "error" "fatal")
 Level="debug"
 Message=":shark: :shark: :shark:"
@@ -12,17 +12,11 @@ source "$Nosh_LibDir/logging.zsh"
 
 __isEvent() {
   local Event="$1"
-  if [[ $Event == *"."* ]]; then
-    return 0
-  else
-    return 1
-  fi
+  [[ $Event =~ \w+\.\w+ ]] && return 0
+  return 1
 }
-if [[ $1 == "-h" || $1 == "--help" ]]; then
-  __log_help
-  exit 0
-fi
 
+[[ $1 == "-h" || $1 == "--help" ]] && __log_help && exit 0
 # is #1 a known level?
 if [[ $KnownLevels[(Ie)$1] -gt 0 ]]; then
   Level="$1"
@@ -36,13 +30,12 @@ if [[ $(__isEvent "$1") -eq 0 ]]; then
   Event="$1"
   shift
 fi
-
 if [[ $# -eq 0 ]]; then
   Message=":shark: :shark: :shark:"
 else
-  Message="$@"
+  Message="${@[@]}"
 fi
-if test -t __log >/dev/null; then
+if typeset -f __log > /dev/null; then
   __log "$Level" "$Event" "$Message"
 else
  echo "⚧ [$(date "+%Y-%m-%d %H:%M:%S")] [error] nosh.log: Error logging message." 1>&2

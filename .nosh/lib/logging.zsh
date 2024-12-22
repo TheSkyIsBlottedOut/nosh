@@ -171,8 +171,8 @@ __fgcolor() {
 __log() {
   local Level="$1"
   local Event="$2"
-  local Message="$@:3"
-  __nosh_log $Level $Event
+  local Message="${@:2}"
+  __nosh_log $Level $Event "$Message"
   __nosh_log_to_file $Level $Event "$Message"
   return 0
 }
@@ -206,7 +206,7 @@ __namedcolor() {
 }
 
 __nosh_log() {
-  # __nosh_log info 'user.did.thing'
+  # __nosh_log info 'user.did.thing' "any other" "messages"
   # __nosh_log error 'user.did.thing'
   local Level="$1"
   local Color="gray"
@@ -221,9 +221,11 @@ __nosh_log() {
     notice|message) Color="cyan";;
     bright|highlight) Color="white";;
     *) Color="gray";;
+
   esac
-  // find all :emoji: in the message and replace them with the actual emoji
-  local Message="$2"
+  local Event="$2"
+  # find all :emoji: in the message and replace them with the actual emoji
+  local Message="${@:3}"
   grep -o -E ':[a-zA-Z0-9_-]+:' <<< $Message | while read -r match; do
     local emoji=$(echo $match | sed 's/://g')
     local replacement=$(__emoji $emoji)
@@ -248,9 +250,6 @@ __nosh_log_to_file() {
     echo $LogMessage >> $logfile
     return 0
 }
-
-
-
 __nosh_spinner() {
   # shows fractions of a string in a spinner until a process is complete.
   # uses while loop to show spinner until the process is complete.

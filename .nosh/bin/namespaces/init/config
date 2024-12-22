@@ -3,5 +3,10 @@
 #  &description Copies the template noshfile to the appdir.
 #  &... eventually, this will contain more config info.
 
-cp $Nosh__EtcDir/nosh.yml $Nosh_AppDir/nosh.yml
+scrawl "debug" "nosh.config" "Checking YQ Sanity..."
 nosh sanity:yq
+scrawl "info" nosh.config "Copying nosh.yml to appdir..."
+cp $Nosh_EtcDir/nosh.yml $Nosh_AppDir
+scrawl "info" nosh.config "Adding name of package.json project..."
+cat $Nosh_AppDir/package.json | jq .name | tr -d '"' | xargs -I {} sed -i '' "s/PROJECT_NAME/{}/g" | xargs -I% yq -i ".nosh.monorepo=\"%\""  $Nosh_AppDir/nosh.yml
+

@@ -33,20 +33,32 @@ done
 
 Namespace="$(echo $Commands[1] | cut -d: -f1)"
 Command="$(echo $Commands[1] | cut -d: -f2)"
-SubCommand="$(echo $Commands[1] | cut -d: -f3)"
-[[ -z "$Command"]] && Namespace="$Command" && Command="util"
-find -L "$Nosh__BinDir/namespaces" -type d -depth 1 -name "$Namespace" | wc -l | grep -q 1 || echo "Namespace $Namespace not found. Use nosh list to get started." && exit 1
-exec "$Nosh__BinDir/namespaces/sys/arch" &21> /dev/null
-
-# Command can be in the namespace folder or an arch subfolder, 'mac' or 'linux'
-CommandPath="$Nosh__BinDir/namespaces/$Namespace/$Command"
+SubCommand="$(echo $Commands[2])"
+if [[ -z "$Command" ]]; then
+  Command="$Namespace"
+  Namespace="util"
+fi
+  echo "Namespace: $Namespace Command: $Command Subcommand: $Subcommand Remainder: $Remainder" 1>&2
+[[  ! -d "$Nosh_BinDir/namespaces" ]] && scrawl error nosh.namespace "No namespaces found. Use nosh list to get started." && exit 1
+[[ ! -d "$Nosh_BinDir/namespaces/$Namespace" ]] && scrawl error nosh.namespace "Namespace $Namespace not found. Use nosh list to get started." && exit 1
+echo "Namespace found: $Namespace" 1>&2
+# Command can be in the namespace fold r or an arch subfolder, 'mac' or 'linux'
 OSFolder="$(case $(uname -s) in
   Darwin) echo "mac" ;;
   Linux) echo "linux" ;;
   *) echo "general" ;;
 esac)"
-[[ -d "$CommandPath" ]] || CommandPath="$Nosh__BinDir/namespaces/$Namespace/$OSFolder/$Command"
-[[ -d "$CommandPath" ]] || CommandPath="$Nosh__BinDir/namespaces/$Namespace/$(uname -s)/$Command"
-[[ -d "$CommandPath" ]] || scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
-exec "$CommandPath" $Subcommand "$Remainder"
+echo "OSFolder: $OSFolder" 1>&2
+CorePath="$Nosh_BinDir/namespaces/$Namespace"
+if [[ -x "$CorePath/$Command" ]]; then
+  CommandPath="$CorePath/$Command"
+elif [[ -x "$CorePath/$OSFolder/$Command" ]]; then
+  CommandPath="$CorePath/$OSFolder/$Command"
+elif [[ -f "$CorePath/$OSFolder/util/$Command" ]]; then
+  CommandPath="$CorePath/$OSFolder/util/$Command"
+else
+  scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
+fi
+echo "Running command: $CommandPath $Subcommand $Remainder" 1>&2
+exec "$CommandPath" "$Subcommand" "$Remainder"
 exit 0
