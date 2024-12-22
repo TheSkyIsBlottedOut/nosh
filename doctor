@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+#- doctor - runs a setup script for your monorepo.
+
+if [[ -z $( which direnv)]]; then
+  echo "direnv is not installed. Nosh will source your .envrc for now. Run nosh:install:direnv to go through the process."
+  source .envrc
+fi
+
+git remote add official git@github.com:Holistic-Dogma/nosh.git
+git rev-parse official/main --verify || git checkout official/main -- .nosh
+
+
+if [[ -z $(which bun) ]]; then
+  echo "bun is not installed. Please install bun to proceed."
+  exit 1
+fi
+
+echo "All necessary tools are installed. You're good to go!"

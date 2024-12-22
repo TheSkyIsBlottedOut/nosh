@@ -21,7 +21,7 @@
     "url": "git@github.com:Holistic-Dogma/nosh.git"
   },
   "workspacees": {
-    "packages": [ "pkg/*" ]
+    "packages": [ "pkg/*", "app/*", "libs/**/*" ]
   },
   "bun-create": {
     "preinstall": "echo \"Let's gooo!\" && source .envrc",

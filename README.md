@@ -6,4 +6,5 @@ you have the following set up:
 
 1. Install 'direnv'; I don't have a non-intrusive way to install this package yet, so please install it manually. Alternately, you can `source .envrc` to load the environment variables.
 
-2. 
+2. Right now I'm just trying to get clean feature parity with the old
+apps. We'll get there.

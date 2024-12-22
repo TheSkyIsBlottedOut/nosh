@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+#- nosh sanity:yq - installs yq and jq.
+
+if [[ -z "$(which yq &2>/dev/null)" ]]; then
+  scrawl info nosh.sanity.yq "yq not found. Installing."
+  nosh sanity:install:yq
+  [[ -z "$(which jq &2>/dev/null)"  ]] && nosh sanity:install:jq
+end
+[[ -z $(yq --version &2>/dev/null) ]] && scrawl error nosh.sanity.yq "yq not installed. Exiting." && exit 1

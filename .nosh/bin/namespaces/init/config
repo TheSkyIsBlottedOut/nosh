@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+#- copies the template noshfile to appdir.
+#  &description Copies the template noshfile to the appdir.
+#  &... eventually, this will contain more config info.
+
+cp $Nosh__EtcDir/nosh.yml $Nosh_AppDir/nosh.yml
+nosh sanity:yq

@@ -1,3 +1,0 @@
-__log_help() {
-  echo "Usage: nlog [level] [event.name] [message...]" &1>2
-}

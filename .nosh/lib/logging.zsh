@@ -1,3 +1,9 @@
+#!/usr/bin/env zsh -i
+__bgcolor() {
+  local color= __namedcolor "$1"
+  printf "\e[48;5;%sm" $color
+}
+
 __emoji() {
   local emojiname="$1"
   case $emojiname in
@@ -151,4 +157,141 @@ __emoji() {
     dolphin) print "🐬";;
     *) print "💬❓";;
   esac
+}
+
+__fgcolor() {
+  local color= __namedcolor "$1"
+  printf "\e[38;5;4%sm" $color
+}
+
+
+ # logs to file and console
+  # __log 'info' 'user.did.thing' "any other" "messages"
+
+__log() {
+  local Level="$1"
+  local Event="$2"
+  local Message="$@:3"
+  __nosh_log $Level $Event
+  __nosh_log_to_file $Level $Event "$Message"
+  return 0
+}
+
+__log_help() {
+  echo "Usage: scrawl [level] [event.name] [message...]" &1>2
+}
+
+
+__namedcolor() {
+  local colorname="$1"
+  case $colorname in
+    black) print "30";;
+    red) print "31";;
+    green) print "32";;
+    yellow) print "33";;
+    blue) print "34";;
+    magenta) print "35";;
+    cyan) print "36";;
+    white) print "37";;
+    BLACK) print "40";;
+    RED) print "41";;
+    GREEN) print "42";;
+    YELLOW) print "43";;
+    BLUE) print "44";;
+    MAGENTA) print "45";;
+    CYAN) print "46";;
+    WHITE) print "47";;
+    *) print "37";;
+  esac
+}
+
+__nosh_log() {
+  # __nosh_log info 'user.did.thing'
+  # __nosh_log error 'user.did.thing'
+  local Level="$1"
+  local Color="gray"
+  case $Level in
+    info) Color="blue";;
+    error|fatal) Color="red";;
+    warn|warning) Color="yellow";;
+    chatty|debug|success) Color="green";;
+    crit|critical) Color="magenta";;
+    fatal) Color="red";;
+    comment) Color="gray";;
+    notice|message) Color="cyan";;
+    bright|highlight) Color="white";;
+    *) Color="gray";;
+  esac
+  // find all :emoji: in the message and replace them with the actual emoji
+  local Message="$2"
+  grep -o -E ':[a-zA-Z0-9_-]+:' <<< $Message | while read -r match; do
+    local emoji=$(echo $match | sed 's/://g')
+    local replacement=$(__emoji $emoji)
+    Message=$(echo $Message | sed "s/$match/$replacement/g")
+  done
+  print "$(__fgcolor white)[$(__fgcolor $Color)$Level$(__fgcolor white)] $(__emoji $Level) - $Message$(__resetcolor)\n"
+  return 0
+}
+
+
+__nosh_log_to_file() {
+    # logs to logs/nosh log file
+    # __nosh_log_to_file 'info' 'user.did.thing' "any other" "messages"
+    local Level="$1"
+    local Event="$2"
+    local Message="$@:3"
+    local Timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    local LogMessage="($Timestamp) [$Level] $Event: $Message"
+    local logfile="$Nosh_LogDir/nosh.$(date +"%Y.%m.%d").log"
+    touch $logfile
+    chmod +rw $logfile
+    echo $LogMessage >> $logfile
+    return 0
+}
+
+
+
+__nosh_spinner() {
+  # shows fractions of a string in a spinner until a process is complete.
+  # uses while loop to show spinner until the process is complete.
+  # __nosh_spinner 'loading-message' 'command'
+  local Message="$1"
+  local Command="$2"
+  local SpinnerChars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+  local SpinnerCharsLength=${#SpinnerChars}
+  local SpinnerIndex=0
+  local SpinnerChar=""
+  local SpinnerMessage=""
+  local SpinnerPID=""
+  local SpinnerStatus=""
+
+  while true; do
+    SpinnerChar="${SpinnerChars:$SpinnerIndex:1}"
+    SpinnerMessage="$(__fgcolor white)[$(__fgcolor blue)loading$(__fgcolor white)] $Message$(__fgcolor white) $SpinnerChar"
+    print -n $SpinnerMessage
+    eval $Command &
+    SpinnerPID=$!
+    while kill -0 $SpinnerPID 2>/dev/null; do
+      sleep 0.1
+      SpinnerIndex=$(( (SpinnerIndex + 1) % SpinnerCharsLength ))
+      print -n "\b"
+      print -n "${SpinnerChars:$SpinnerIndex:1}"
+    done
+    wait $SpinnerPID
+    SpinnerStatus=$?
+    if [[ $SpinnerStatus -eq 0 ]]; then
+      print -n "\b"
+      print -n "$(__fgcolor green)✅"
+      puts
+      return 0
+    else
+      print -n "\b"
+      print -n "$(__fgcolor red)❌"
+      puts
+      return 1
+    fi
+  done
+}
+__resetcolor() {
+  printf "\e[0m"
 }

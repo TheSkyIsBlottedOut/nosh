@@ -8,7 +8,7 @@
 # &... it will forcibly install files if you use it.
 
 __quit_usage() {
-  nlog error nosh.usage "nosh requires a command to run. Usage: nosh [namespace]:[command] [...args]"
+  scrawl error nosh.usage "nosh requires a command to run. Usage: nosh [namespace]:[command] [...args]"
   exit 1
 }
 
@@ -33,6 +33,7 @@ done
 
 Namespace="$(echo $Commands[1] | cut -d: -f1)"
 Command="$(echo $Commands[1] | cut -d: -f2)"
+SubCommand="$(echo $Commands[1] | cut -d: -f3)"
 [[ -z "$Command"]] && Namespace="$Command" && Command="util"
 find -L "$Nosh__BinDir/namespaces" -type d -depth 1 -name "$Namespace" | wc -l | grep -q 1 || echo "Namespace $Namespace not found. Use nosh list to get started." && exit 1
 exec "$Nosh__BinDir/namespaces/sys/arch" &21> /dev/null
@@ -46,6 +47,6 @@ OSFolder="$(case $(uname -s) in
 esac)"
 [[ -d "$CommandPath" ]] || CommandPath="$Nosh__BinDir/namespaces/$Namespace/$OSFolder/$Command"
 [[ -d "$CommandPath" ]] || CommandPath="$Nosh__BinDir/namespaces/$Namespace/$(uname -s)/$Command"
-[[ -d "$CommandPath" ]] || nlog error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
-exec "$CommandPath" $Remainder
+[[ -d "$CommandPath" ]] || scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
+exec "$CommandPath" $Subcommand "$Remainder"
 exit 0

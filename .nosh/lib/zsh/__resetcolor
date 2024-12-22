@@ -1,4 +1,0 @@
-
-__resetcolor() {
-  printf "\e[0m"
-}
