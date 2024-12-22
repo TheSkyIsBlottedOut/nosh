@@ -1,0 +1,41 @@
+{
+  "name": "@vintage-dogma/nosh",
+  "description": "A Bun template for creating a pure Bun project, with niceties.",
+  "main": "lets-go.js",
+  "type": "module",
+  "keywords": [ "bun", "template", "monorepo", "native"],
+  "version": "0.0.1",
+  "license": "SEE LICENSE IN https://gist.github.com/TheSkyIsBlottedOut/ee11fa06ca4a76870c71ee6ca0adfeb7#file-tos-vdv2-md",
+  "engines": {
+    "bun": ">=0.0.1"
+  },
+  "bin": {
+    "nosh": ".nosh/bin/nosh"
+  },
+  "author": {
+    "name": "the fall of man",
+    "email": "developer@iswork.in"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Holistic-Dogma/nosh.git"
+  },
+  "workspacees": {
+    "packages": [ "pkg/*" ]
+  },
+  "bun-create": {
+    "preinstall": "echo \"Let's gooo!\" && source .envrc",
+    "postinstall": "echo \"Use 'nosh list' to get started with commands.\""
+  },
+  "devDependencies": {
+    "bun": "^0.0.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "scripts": {
+    "publish": "npm publish --access public",
+    "scoped-init": "bun init --scope=@vintage-dogma",
+    "scoped-publish": "npm run publish -- --scope=@vintage-dogma",
+    "start": "bun run lets-go.js"
+  }
+}

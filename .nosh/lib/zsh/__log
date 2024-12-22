@@ -1,0 +1,13 @@
+  # logs to file and console
+  # __log 'info' 'user.did.thing' "any other" "messages"
+
+autoload -Uz __nosh_log __nosh_log_to_file
+
+__log() {
+  local Level="$1"
+  local Event="$2"
+  local Message="$@:3"
+  __nosh_log $Level $Event
+  __nosh_log_to_file $Level $Event "$Message"
+  return 0
+}

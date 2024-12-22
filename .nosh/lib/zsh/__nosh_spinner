@@ -1,0 +1,43 @@
+autoload __fgcolor __namedcolor __resetcolor
+
+__nosh_spinner() {
+  # shows fractions of a string in a spinner until a process is complete.
+  # uses while loop to show spinner until the process is complete.
+  # __nosh_spinner 'loading-message' 'command'
+  local Message="$1"
+  local Command="$2"
+  local SpinnerChars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
+  local SpinnerCharsLength=${#SpinnerChars}
+  local SpinnerIndex=0
+  local SpinnerChar=""
+  local SpinnerMessage=""
+  local SpinnerPID=""
+  local SpinnerStatus=""
+
+  while true; do
+    SpinnerChar="${SpinnerChars:$SpinnerIndex:1}"
+    SpinnerMessage="$(__fgcolor white)[$(__fgcolor blue)loading$(__fgcolor white)] $Message$(__fgcolor white) $SpinnerChar"
+    print -n $SpinnerMessage
+    eval $Command &
+    SpinnerPID=$!
+    while kill -0 $SpinnerPID 2>/dev/null; do
+      sleep 0.1
+      SpinnerIndex=$(( (SpinnerIndex + 1) % SpinnerCharsLength ))
+      print -n "\b"
+      print -n "${SpinnerChars:$SpinnerIndex:1}"
+    done
+    wait $SpinnerPID
+    SpinnerStatus=$?
+    if [[ $SpinnerStatus -eq 0 ]]; then
+      print -n "\b"
+      print -n "$(__fgcolor green)✅"
+      puts
+      return 0
+    else
+      print -n "\b"
+      print -n "$(__fgcolor red)❌"
+      puts
+      return 1
+    fi
+  done
+}

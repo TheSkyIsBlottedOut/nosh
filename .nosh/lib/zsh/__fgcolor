@@ -1,0 +1,5 @@
+autoload -Uz __namedcolor
+__fgcolor() {
+  local color= __namedcolor "$1"
+  printf "\e[38;5;4%sm" $color
+}

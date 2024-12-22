@@ -1,0 +1,22 @@
+__namedcolor() {
+  local colorname="$1"
+  case $colorname in
+    black) print "30";;
+    red) print "31";;
+    green) print "32";;
+    yellow) print "33";;
+    blue) print "34";;
+    magenta) print "35";;
+    cyan) print "36";;
+    white) print "37";;
+    BLACK) print "40";;
+    RED) print "41";;
+    GREEN) print "42";;
+    YELLOW) print "43";;
+    BLUE) print "44";;
+    MAGENTA) print "45";;
+    CYAN) print "46";;
+    WHITE) print "47";;
+    *) print "37";;
+  esac
+}

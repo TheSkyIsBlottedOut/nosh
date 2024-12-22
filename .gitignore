@@ -1,0 +1,7 @@
+logs/*
+!logs/.gitkeep
+.DS_Store
+.nosh/tmp/*
+.nosh/usr/profiles/*
+!.nosh/usr/profiles/base.profile
+

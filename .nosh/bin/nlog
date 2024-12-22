@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+#- nlog [level] [event] [message]
+#-   Log a message to the console and optionally to a file, based on profile settings.
+
+[[ -z "$Nosh__LogLevel_Console" ]] && export Nosh__LogLevel_Console="info"
+[[ -z "$Nosh__LogLevel_File" ]] && export Nosh__LogLevel_File="info"
+KnownLevels=("trace" "debug" "info" "warn" "error" "fatal")
+Level="debug"
+Message=":shark: :shark: :shark:"
+Event="nosh.event"
+autoload -Uz __log __log_help
+__isEvent() {
+  local Event="$1"
+  if [[ $Event == *"."* ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+if [[ $1 == "-h" || $1 == "--help" ]]; then
+  __log_help
+  exit 0
+fi
+
+# is #1 a known level?
+if [[ $KnownLevels[(Ie)$1] -gt 0 ]]; then
+  Level="$1"
+  shift
+else
+  Level="info"
+fi
+
+# is the next argument an event?
+if [[ $(__isEvent "$1") -eq 0 ]]; then
+  Event="$1"
+  shift
+fi
+
+if [[ $# -eq 0 ]]; then
+  Message=":shark: :shark: :shark:"
+else
+  Message="$@"
+fi
+
+__log "$Level" "$Event" "$Message"
+exit 0

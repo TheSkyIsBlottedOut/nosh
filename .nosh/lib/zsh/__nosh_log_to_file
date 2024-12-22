@@ -1,0 +1,12 @@
+autoload -Uz __nosh_logfile
+__nosh_log_to_file() {
+    # logs to logs/nosh log file
+    # __nosh_log_to_file 'info' 'user.did.thing' "any other" "messages"
+    local Level="$1"
+    local Event="$2"
+    local Message="$@:3"
+    local Timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    local LogMessage="($Timestamp) [$Level] $Event: $Message"
+    print -r $LogMessage >> __nosh_logfile
+    return 0
+}

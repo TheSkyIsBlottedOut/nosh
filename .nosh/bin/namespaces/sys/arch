@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+#- nosh sys:arch - system architecture detector.
+#  &description Finds your system architecture and exports it as an env var.
+#  &... this is useful when you need to identify your architecture to find installers, etc.
+#  &... it will also install the necessary packages to make sure you can build things.
+#  &usage nosh sys:arch
+
+export Nosh_UserOS="$(uname -s)"
+export Nosh_SysArch="$(uname -m)"

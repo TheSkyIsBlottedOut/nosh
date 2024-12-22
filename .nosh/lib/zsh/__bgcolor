@@ -1,0 +1,5 @@
+autoload -Uz __namedcolor
+__bgcolor() {
+  local color= __namedcolor "$1"
+  printf "\e[48;5;%sm" $color
+}

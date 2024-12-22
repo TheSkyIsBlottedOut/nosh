@@ -1,0 +1,8 @@
+
+__nosh_logfile() {
+  # defines the current logfile
+  local logfile="$Nosh_AppDir/logs/nosh.$(date ".%Y.%M.%D").log"
+  touch $logfile
+  print -r $logfile
+  return 0
+}
