@@ -1,0 +1,18 @@
+#!/usr/bin/env zsh
+#- nosh [util:]list [namespace] - list all available commands.
+echo "$1 $2 $3 $4 $5" 1>&2
+[[ -z "$2" ]] &&
+Namespace="$2"
+[[ -z "$Namespace" ]] && Namespace="util"
+
+Files=("$(find -L "$Nosh_BinDir/namespaces/$Namespace" -type f -name "*" | cut -d/ -f6 | cut -d. -f1 | sort)")
+for File in $Files; do
+  head -n5 "$Nosh_BinDir/namespaces/$Namespace/$File" | grep -q "#- " || continue
+  Description="$(head -n5 "$Nosh_BinDir/namespaces/$Namespace/$File" | grep "#- " | cut -c4-)"
+  # lpad filename. If it is in an arch subfolder, move it so mac/file -> file (mac)
+  [[ $File == *"/"* ]] && File="$(echo $File | cut -d/ -f2) ($(echo $File | cut -d/ -f1))"
+  printf "%-20s %s\n" "$File" "$Description"
+done
+echo "\n\nMore namespaces: ${$(ls -1 "$Nosh_BinDir/namespaces" | tr '\n' '|')}" &1>2
+echo "For more info on one command, run nosh util:help [namespace] [command]" &1>2
+exit 0

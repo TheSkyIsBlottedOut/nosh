@@ -1,0 +1,9 @@
+{
+  "extends": "../../jsconfig.json",
+  "buildOptions": {
+    "outDir": "../../public/graybin"
+  },
+  "aliases": {
+    "@/*": "./src/*",
+  }
+}

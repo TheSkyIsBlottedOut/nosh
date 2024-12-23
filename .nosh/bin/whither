@@ -1,0 +1,38 @@
+#!/usr/bin/env zsh
+#- wherefore [filetype]
+#-   Find where feature-specific files are located.
+#-   &description This command will tell you where to find the files that are specific to a certain feature.
+__print_location_of_file() {
+  local Filetype="$1"
+  local FileLocation="$(__filetype_for $Filetype)"
+  [[ -z "$FileLocation" ]] && return 1
+  echo "${FileType} can be found at: $FileLocation.\n"
+  return 0
+}
+
+
+
+
+__filetype_for() {
+  local Filetype="$1"
+  case $Filetype in
+    etc|config|templates) echo "$Nosh_AppDir/.nosh/etc" ;;
+    bin|nosh|bins|scripts) echo "$Nosh_AppDir/.nosh/bin" ;;
+    zsh|shell|cli|autoload) echo "$Nosh_LibDir/zsh" ;;
+    logs|log|logfile) echo "$Nosh_AppDir/logs" ;;
+    workspace|ws|packages|libs) echo "$Nosh_AppDir/pkg";;
+    website|app|web) echo "$Nosh_AppDir/app" ;;
+    nosh-config|nosh-configs|nosh-configurations) echo "$Nosh_AppDir/.nosh/etc/nosh.yml"
+    zlogs) echo "$Nosh_LibDir/zsh/logging.zsh";;
+    z*) echo "$Nosh_LibDir/zsh/$Filetype.zsh";;
+    aliases) echo "$Nosh_EtcDir/.aliases";;
+    tmp|temp|temporary) echo "$Nosh_AppDir/.nosh/tmp";;
+    *) return 1 ;;
+  esac
+  return 0
+}
+
+[[ $# -eq 0 ]] && __quit_usage
+[[ $2 == "-v" ]] && __print_location_of_file $1 && exit 0
+__filetype_for $1
+exit 0

@@ -1,0 +1,37 @@
+#!/usr/bin/env zsh
+#- nosh util:help - print help for a given command.
+#  &description This command will print the help for a given command.
+#  &... If no command is given, it will print the help for itself.
+#  &usage nosh util:help [namespace] [command]
+#  &example nosh util:help util help
+#  &example nosh util:help sys arch
+
+__quit_usage() {
+  scrawl error nosh.usage "nosh util:help requires a namespaced command to run. Usage: nosh util:help [namespace] [command]"
+  exit 1
+}
+
+[[ $# -eq 0 ]] && __quit_usage
+A=("${@}")
+Namespace="$(echo $A[1] | cut -d: -f1)"
+Command="$(echo $A[1] | cut -d: -f2)"
+SubCommand="$(echo $A[1] | cut -d: -f3)"
+[[ -z "$Command" ]] && Namespace="$Command" && Command="util"
+Args="${A:2}"
+find -L "$Nosh_BinDir/namespaces" -type d -depth 1 -name "$Namespace" | wc -l | grep -q 1 || echo "Namespace $Namespace not found. Use nosh list to get started." && exit 1
+exec "$Nosh_BinDir/namespaces/sys/arch" &21> /dev/null
+# This exported an environment variable
+find -L "$Nosh_BinDir/namespaces/$Namespace" -type f -depth 2 -name "$Command" | wc -l | grep -q 1 || echo "Command $Command not found in namespace $Namespace. Use nosh list to get started." && exit 1
+declare -A CommandInfo
+Current=""
+while read -r Line; do
+  [[ ! $Line =~ ^# ]] && continue
+  [[ $Line =~ ^#- ]] && CommandInfo["description"]="${Line:3}"
+  [[ $Line =~ ^#\s+&(\w+): ]] && CommandInfo["${Line[3,-1]}"]="${Line:5}" && Current="${Line[3,-1]}"
+  [[ $Line =~ ^#\s+&\.\.\. ]] && CommandInfo["$Current"]="${CommandInfo["$Current"]}\n${Line:5}"
+done < "$Nosh_BinDir/namespaces/$Namespace/$Command"
+scrawl info "." "Command: :star4: $Namespace:$Command :star4:"
+for Key in ${(k)CommandInfo}; do
+  printf "%-20s %s\n" "$Key" "${CommandInfo[$Key]}"
+done
+exit 0

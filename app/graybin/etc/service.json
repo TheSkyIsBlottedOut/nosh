@@ -1,0 +1,36 @@
+{
+  "name": "graybin",
+  "port": 7070,
+  "routes": {
+    "static": {
+      "path": "public",
+      "options": { "maxAge": 0 }
+    },
+    "api": "@graybin/api",
+    "views": "@graybin/scenes"
+  },
+  "middleware": {
+    "antibot": {
+      "enabled": true,
+      "options": {
+        "whitelisted": ["curl", "node-fetch", "axios", "faraday", "httparty"],
+        "allowWithHeader": "X-Nosh-Graybin",
+        "denyBadActors": "always",
+        "behavior": "standard",
+        "description": "Standard middleware sends a random error code on route fetch."
+      }
+    },
+    "rateLimit": {
+      "enabled": true,
+      "options": {
+        "maxRequests": {
+          "daily": 10000,
+          "minute": 60,
+          "second": 10
+        },
+        "message": "You are going way too hard. Slow down.",
+        "statusCode": 420
+      }
+    }
+  }
+}

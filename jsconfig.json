@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "baseUrl": "./",
+    "allowArbitraryExtensions": true,
+    "checkJs": true,
+    "jsx": "react-jsx",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "esnext",
+    "allowImportingTsExtensions": true,
+    "typeRoots": ["node_modules/@types", "libs/types"],
+    "paths": {
+      "@@app/*": ["app/*"],
+      "@@libs/*": ["libs/*"],
+      "@@tk/*": ["tk/*"],
+      "@@data/*": ["data/*"],
+      "$graybin/*": ["apps/graybin/*"],
+      "@@nosh/libs/*": ["libs/.nosh/*"],
+      "@@nosh/tk/*": ["tk/.nosh/*"]
+    }
+  }
+}

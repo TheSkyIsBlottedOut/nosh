@@ -1,0 +1,64 @@
+#!/usr/bin/env zsh
+#- nosh - a shell script to manage your monorepo projects.
+# &usage: nosh [namespace]:[command] [...args]
+# &description: nosh is a task runner for your bun monorepo.
+# &... it has a handful of helper scripts to make your life easier.
+# &... it has opinionated installs, which it will use to find and install things on your system.
+# &... it requires zsh (for function exports and autoloads).
+# &... it will forcibly install files if you use it.
+
+__quit_usage() {
+  scrawl error nosh.usage "nosh requires a command to run. Usage: nosh [namespace]:[command] [...args]"
+  exit 1
+}
+
+[[ $# -eq 0 ]] && __quit_usage
+
+
+# Find the namespace/command arguments
+Args=()
+Commands=()
+Remainder=()
+for Arg in $@; do
+  if [[ $Arg == *":"* ]]; then
+    Commands+=($Arg)
+  elif [[ $Arg == ^- ]]; then
+    Args+=($Arg)
+  else
+    Remainder+=($Arg)
+  fi
+done
+
+[[ -z "$Commands" ]] && __quit_usage
+
+Namespace="$(echo $Commands[1] | cut -d: -f1)"
+Command="$(echo $Commands[1] | cut -d: -f2)"
+SubCommand="$(echo $Commands[2])"
+if [[ -z "$Command" ]]; then
+  Command="$Namespace"
+  Namespace="util"
+fi
+  echo "Namespace: $Namespace Command: $Command Subcommand: $Subcommand Remainder: $Remainder" 1>&2
+[[  ! -d "$Nosh_BinDir/namespaces" ]] && scrawl error nosh.namespace "No namespaces found. Use nosh list to get started." && exit 1
+[[ ! -d "$Nosh_BinDir/namespaces/$Namespace" ]] && scrawl error nosh.namespace "Namespace $Namespace not found. Use nosh list to get started." && exit 1
+echo "Namespace found: $Namespace" 1>&2
+# Command can be in the namespace fold r or an arch subfolder, 'mac' or 'linux'
+OSFolder="$(case $(uname -s) in
+  Darwin) echo "mac" ;;
+  Linux) echo "linux" ;;
+  *) echo "general" ;;
+esac)"
+echo "OSFolder: $OSFolder" 1>&2
+CorePath="$Nosh_BinDir/namespaces/$Namespace"
+if [[ -x "$CorePath/$Command" ]]; then
+  CommandPath="$CorePath/$Command"
+elif [[ -x "$CorePath/$OSFolder/$Command" ]]; then
+  CommandPath="$CorePath/$OSFolder/$Command"
+elif [[ -f "$CorePath/$OSFolder/util/$Command" ]]; then
+  CommandPath="$CorePath/$OSFolder/util/$Command"
+else
+  scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
+fi
+echo "Running command: $CommandPath $Subcommand $Remainder" 1>&2
+exec "$CommandPath" "$Subcommand" "$Remainder"
+exit 0

@@ -1,0 +1,20 @@
+#!/usr/bin/env zsh -i
+#- nosh init:profile myprofile <<- ...
+# &:description Creates a new named .profile file in the Nosh profiles directory.
+# &:description The profile file is a shell script that is sourced by the Nosh environment.
+# &:example nosh init:profile myprofile <<< cat <<-:
+# &... export MYVAR="myvalue"
+# &... export PATH="${Nosh_BinDir}:${PATH}"
+# &... scrawl info nosh.init "Profile myprofile loaded."
+# &... :
+
+ProfilesDir="${Nosh_UsrDir}/profiles"
+[[ -z "$1" ]] && echo "No profile name given." && exit 1
+ProfileName="$ProfilesDir/$1"
+[[ ! "$1" =~ \.profile$ ]] && ProfileName="${ProfileName}.profile"
+[[ -f "$ProfileName" ]] && echo "Profile $1 already exists." && exit 1
+shift
+cat > "${ProfilesDir}/$1" <<< echo "${@}" | sed 's/\\n/\n/g' | sed 's/^\s*//g' | sed 's/\s*$//g' | sed 's/\\t/\t/g' | sed 's/\\r/\r/g' | sed 's/\\f/\f/g'
+chmod 755 "${ProfilesDir}/$1.profile"
+$(which direnv &>/dev/null) && direnv reload
+scrawl info nosh.init "Profile $1 loaded."

@@ -1,0 +1,21 @@
+#!/usr/bin/env zsh
+#- nosh crypto:encrypt - encrypts a string with the password set in nosh crypto:password.
+
+# &usage: nosh crypto:encrypt [string]
+
+if [[ -z "$1" || "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
+  echo "Usage: nosh crypto:encrypt [string]"
+  exit 0
+fi
+
+if [[ -z "$Nosh__Encryption_Password" ]]; then
+  scrawl 'error' 'You must set an encryption password. Run `nosh crypto:password set [password]`.'
+  exit 1
+fi
+
+scrawl info nosh.crypto.encrypt "Encrypting string with user provided password."
+
+source $(whither zncyk)
+echo $(__nosh_encrypt_string "$1")
+exit 0
+

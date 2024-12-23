@@ -1,0 +1,17 @@
+#!/usr/bin/env zsh
+
+if [[ -z "$(which ruby &2>/dev/null)" ]]; then
+  scrawl info nosh.sanity.ruby "Ruby not found. Installing."
+  nosh sanity:install:package ruby
+  nosh sanity:install:package ruby-dev
+  nosh sanity:install:package ruby-full # apt only
+  nosh sanity:install:ruby-install
+  nosh sanity:install:chruby
+  nosh sanity:install:rubygems
+  ruby-install ruby-3.2
+  chruby 3.2
+  bundle init
+  bundoe add bundler hashie pry openurl
+end
+[[ -z $(ruby -v &2>/dev/null) ]] && scrawl error nosh.sanity.ruby "Ruby not installed. Exiting." && exit 1
+scrawl info nosh.sanity.ruby "Ruby installed."

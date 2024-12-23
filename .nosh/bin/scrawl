@@ -1,0 +1,44 @@
+#!/usr/bin/env zsh
+#- scrawl [level] [event] [message]
+#-   Log a message to the console and optionally to a file, based on profile settings.
+
+[[ -z "$Nosh_LogLevel_Console" ]] && export Nosh_LogLevel_Console="info"
+[[ -z "$Nosh_LogLevel_File" ]] && export Nosh_LogLevel_File="info"
+KnownLevels=("trace" "debug" "info" "warn" "alert" "error" "fatal")
+Level="debug"
+Message=":shark: :shark: :shark:"
+Event="nosh.event"
+source "$Nosh_LibDir/logging.zsh"
+
+__isEvent() {
+  local Event="$1"
+  [[ $Event =~ \w+\.\w+ ]] && return 0
+  return 1
+}
+
+[[ $1 == "-h" || $1 == "--help" ]] && __log_help && exit 0
+# is #1 a known level?
+if [[ $KnownLevels[(Ie)$1] -gt 0 ]]; then
+  Level="$1"
+  shift
+else
+  Level="info"
+fi
+
+# is the next argument an event?
+if [[ $(__isEvent "$1") -eq 0 ]]; then
+  Event="$1"
+  shift
+fi
+if [[ $# -eq 0 ]]; then
+  Message=":shark: :shark: :shark:"
+else
+  Message="${@[@]}"
+fi
+if typeset -f __log > /dev/null; then
+  __log "$Level" "$Event" "$Message"
+else
+ echo "⚧ [$(date "+%Y-%m-%d %H:%M:%S")] [error] nosh.log: Error logging message." 1>&2
+ echo "⚆ [$(date "+%Y-%m-%d %H:%M:%S")] <$Level> |$Event| $Message" 1>&2
+fi
+exit 0

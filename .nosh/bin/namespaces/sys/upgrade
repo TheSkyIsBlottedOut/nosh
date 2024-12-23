@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+#- nosh sys:upgrade - upgrades to the latest version of nosh.
+
+# Check official upstream for the latest version.

@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+#- nosh crypto:pemgen <key_name> [optional_passphrase]
+#  &description: Generates a PEM key pair. Stores the private key
+#  &... to .nosh/etc/cert/priv/<key_name>.pem and the public key
+#  &... to .nosh/etc/cert/pub/<key_name>.pem.
+#  &... If <optional_passphrase> is provided, the private key will
+#  &... be encrypted with it. Otherwise, nosh will use its own internal password
+#  &... which will appear in the repository's nosh repo.
+source $(whither zncyk)
+# Check for required arguments.
+if [[ -z $1 ]]; then
+  scrawl 'error' 'You must provide a key name.'
+  exit 1
+fi
+KeyName="$1"
+if [[ -z "$2" ]]; then
+  Passphrase=$(__nosh_internal_ckey)
+else
+  Passphrase="$2"
+fi
+
+ssh-keygen -t ed25519 -f $Nosh_Config/cert/priv/$KeyName -N "$Passphrase"
+openssl pkey -in $Nosh_Config/cert/priv/$KeyName -pubout -out $Nosh_Config/cert/pub/$KeyName
+scrawl 'alert' "Generated key pair for $KeyName."
