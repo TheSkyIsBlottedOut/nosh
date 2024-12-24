@@ -1,4 +1,4 @@
-import { O_O } from "../unhelpfully"
+import { O_O } from "../unhelpfully/index.js"
 
 function N(value) {
   return NumberClassifier.up(value);

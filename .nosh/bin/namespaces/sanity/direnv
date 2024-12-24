@@ -1,0 +1,11 @@
+#!/usr/bin/env zsh
+#- nosh sanity:direnv - Ensures direnv is installed.
+#  &description: Ensures direnv is installed. If it is not, it will be installed.
+#  &... it WILL try to modify your home .zshrc file.
+#  &usage: nosh sanity:direnv
+
+[[ ! -z $(which direnv) ]] && exit 0
+nosh sanity:install direnv && exit 0
+scrawl alert nosh.sanity.direnv "Could not install direnv via package manager. Installing via direct download."
+curl -sfL https://direnv.net/install.sh | zsh
+exit 0

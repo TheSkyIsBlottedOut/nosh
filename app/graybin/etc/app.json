@@ -6,8 +6,8 @@
       "path": "public",
       "options": { "maxAge": 0 }
     },
-    "api": "@graybin/api",
-    "views": "@graybin/scenes"
+    "api": "api",
+    "views": "scenes"
   },
   "middleware": {
     "antibot": {

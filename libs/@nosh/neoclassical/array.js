@@ -1,5 +1,5 @@
-import { O_O } from '..unhelpfully/'
-import { Float } from './integer';
+import { O_O } from '@@nosh-libs/unhelpfully'
+import { Float } from './integer.ts';
 
 
 export const enlist = (...args) => {

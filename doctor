@@ -1,18 +1,59 @@
 #!/usr/bin/env zsh
 #- doctor - runs a setup script for your monorepo.
 
+_write() {
+  echo -e "\033[1;32m$1\033[0m" 1>&2
+  return 0
+}
+
+__add_official() {
+  # is official remote installed?
+  if [[ -z $(git remote -v | grep official) ]]; then
+    git remote add official git@github.com:Holistic-Dogma/nosh.git
+  fi
+  git fetch official
+  return 0
+}
+
+cd dirname ./doctor | realpath
+
 if [[ -z $( which direnv)]]; then
-  echo "direnv is not installed. Nosh will source your .envrc for now. Run nosh:install:direnv to go through the process."
+  _write "direnv is not installed / in path. Nosh will source your .envrc for now, and we will install direnv at the end."
   source .envrc
+else
+  direnv allow
+  _write "direnv is installed and your .envrc has been sourced."
 fi
 
-git remote add official git@github.com:Holistic-Dogma/nosh.git
-git rev-parse official/main --verify || git checkout official/main -- .nosh
+if [[ -z "$Nosh_AppDir" ]]; then
+  _write "Nosh_AppDir is not set, even after .envrc has been sourced. If the .envrc has been modified, consider checking out the official source from https://github.com/Holistic-Dogma/nosh."
+  _write "For now, we will set the values for you."
+  export Nosh_AppDir=$(pwd)
+  export Nosh_BinDir=$(pwd)/.nosh/bin
+fi
 
+if [[ ! -f $(which nosh) ]]; then
+  _write "Nosh not found in path. checking for file..."
+  if [[ -f $Nosh_BinDir/nosh ]]; then
+    _write "Nosh found in $Nosh_BinDir. Adding to path."
+    export PATH=$PATH:$Nosh_BinDir
+  else
+    _write "Nosh not found in $Nosh_BinDir. Installing from official source."
+    __add_official
+    git checkout official/main -- .nosh
+    _write "Nosh installed. Adding to path."
+    export PATH=$PATH:$Nosh_BinDir
+    if [[ -z $(which nosh) ]]; then
+      _write "Nosh not found in path. Please check your installation."
+      exit 1
+    fi
+  fi
+fi
 
 if [[ -z $(which bun) ]]; then
-  echo "bun is not installed. Please install bun to proceed."
-  exit 1
-fi
+  echo "bun is not installed. Installing..."
+  nosh sanity:bun
+
+
 
 echo "All necessary tools are installed. You're good to go!"

@@ -1,2 +1,8 @@
 #!/usr/bin/env zsh
 #- makes sure bun is installed on your system.
+
+# &usage: nosh sanity:bun
+
+[[ ! -z $(which bun) ]] && exit 0
+curl -fsSL https://bun.sh/install | zsh
+exit 0

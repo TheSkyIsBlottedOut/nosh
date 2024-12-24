@@ -1,4 +1,4 @@
-import { NArray } from './array';
+import { NArray } from './array.js';
 
 class NString extends String {
   constructor(...args) { super(...args); }

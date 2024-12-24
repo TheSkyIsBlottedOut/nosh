@@ -3,25 +3,23 @@
     "allowJs": true,
     "baseUrl": "./",
     "allowArbitraryExtensions": true,
-    "checkJs": true,
+    "checkJs": false,
     "jsx": "react-jsx",
-    "module": "NodeNext",
     "moduleResolution": "nodenext",
+    "module": "nodenext",
+    "target": "ES2020",
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": false,
-    "target": "esnext",
     "allowImportingTsExtensions": true,
     "typeRoots": ["node_modules/@types", "libs/types"],
     "paths": {
-      "@@app/*": ["app/*"],
-      "@@libs/*": ["libs/*"],
-      "@@tk/*": ["tk/*"],
-      "@@data/*": ["data/*"],
-      "$g/*": ["apps/graybin/*"],
-      "@@nosh/libs/*": ["libs/.nosh/*"],
-      "@@nosh/tk/*": ["tk/.nosh/*"]
+      "@app/*": ["app/*"],
+      "@libs/*": ["libs/*"],
+      "@tk/*": ["tk/*"],
+      "@data/*": ["data/*"],
+      "$g/*": ["apps/graybin/*"]
     }
   }
 }

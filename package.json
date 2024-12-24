@@ -1,8 +1,9 @@
 {
   "name": "@vintage-dogma/graybin",
   "description": "A pure Bun nosh app with a secure pastebin service.",
-  "main": "lets-go.js",
+  "main": "nosh launch graybin",
   "type": "module",
+  "private": true,
   "keywords": ["bun", "pastebin", "nosh"],
   "version": "0.0.1",
   "license": "SEE LICENSE IN https://gist.github.com/TheSkyIsBlottedOut/ee11fa06ca4a76870c71ee6ca0adfeb7#file-tos-vdv2-md",
@@ -10,7 +11,8 @@
     "bun": ">=0.0.1"
   },
   "bin": {
-    "nosh": ".nosh/bin/nosh"
+    "nosh": ".nosh/bin/nosh",
+    "scrawl": ".nosh/bin/scrawl"
   },
   "author": {
     "name": "the fall of man",
@@ -20,12 +22,8 @@
     "type": "git",
     "url": "keybase://team/fintechblackops/graybin"
   },
-  "workspacees": {
-    "packages": ["tk/*", "app/*", "libs/**/*"]
-  },
-  "bun-create": {
-    "preinstall": "echo \"Let's gooo!\" && source .envrc",
-    "postinstall": "echo \"Use 'nosh list' to get started with commands.\""
+  "workspaces": {
+    "packages": ["libs/*"]
   },
   "devDependencies": {
     "bun": "^0.0.1",

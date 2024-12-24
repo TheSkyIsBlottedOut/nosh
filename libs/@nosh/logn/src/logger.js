@@ -1,33 +1,23 @@
 import { $ } from 'bun'
-import { appendFile } from 'node:fs/promises'
-import { NString } from '@@nosh/libs/neoclassical'
-import defaults from './defaults.json'
-
+import defaults from './defaults.json' assert { type: 'json' }
 const defaultConfig = defaults.logger
-
 const RootDir = process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
 const LogDir = `${RootDir}/logs`
 const Microtime = [[82600, 'd'], [3600, 'h'], [60, 'm'], [1, 's']]
 const LogPriority = {
-  trace: 0,
-  chatty: 1,
-  verbose: 1,
-  debug: 2,
-  info: 3,
-  warn: 4,
-  error: 5,
-  alert: 5,
-  crit: 6,
-  fatal: 6
+  trace: 0, chatty: 1, verbose: 1,
+  debug: 2, info: 3, warn: 4,
+  error: 5, alert: 5,
+  crit: 6, fatal: 6
 }
 
 export class Logger {
   app = 'app'
-  #logs = []
-  #config = {}
-  currentLog = {}
-  appStart = 0
-  requestStart = 0
+  #logs = Object.create({})
+  #config = { ...defaultConfig }
+  currentLog = { data: { context: {} } }
+  appStart = 101
+  requestStart = 102
 
   constructor(appname) {
     this.app = appname
@@ -41,14 +31,14 @@ export class Logger {
 
   initLogger() {
     ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'uncaughtException', 'SIGTERM'].forEach(event => {
-      process.on(event, () => this.writeLogsToFile())
+      process.on(event, async () => await this.writeLogsToFile())
     })
   }
 
   async writeLogsToFile() {
-    const logs = this.#logs.map(log => JSON.stringify(log)).join('\n')
+    const logs = this.#logs.filter(log => LogLevel[log.level] >= LogLevel[this.config.file.level]).map(log => JSON.stringify(log)).join('\n')
     this.logs = []
-    await appendFile(this.logfile, logs)
+    await $`mkdir -p ${LogDir} && touch ${this.logfile} && echo "${logs}" >> ${this.logfile}`
   }
   set config(cfg) { this.#config = { ...this.#config, ...cfg } }
   get config() { return { ...defaultConfig, ...this.#config}}
@@ -60,9 +50,10 @@ export class Logger {
       H: date.getHours(),
       m: date.getMinutes(),
       s: date.getSeconds()}
-    const datetime = new NString(this.config.file.fileNameTimeFormat).interpolate(datevalue, '%token')
-    return new NString( this.config.file.fileNameTimeFormat).interpolate({
-      app: this.app, time: datevalue, date: datevalue,
+    const datetime = this.config.file.fileNameTimeFormat.replace(/%(\w)/g, (match, key) => datevalue[key])
+    return this.config.file.fileNameTimeFormat.replace(/:(\w+)/g, (match, key) => {
+      if (key === 'app') return this.appName
+      if (key === 'time') return datevalue
     })
  }
   get logfile() { return `${LogDir}/${this.logfilename}` }
@@ -111,6 +102,7 @@ export class Logger {
   withSessionId(sessionid) { return this.context({ sessionId: sessionid }) }
   withUserId(userid) { return this.context({ userId: userid }) }
   logToConsole() {
+    if (LogPriority[this.currentLog.level] < LogPriority[this.config.console.level]) return
     const timenow = +new Date()
     var elapsed = timenow - this.requestStart
     let timestring = ''
@@ -122,7 +114,9 @@ export class Logger {
     timestring += `${elapsed}ms`
     const format = new NString(this.config.console.format)
     if (format.matches(/\:/m)) {
-      console.log(format.interpolate({ app: this.app, level: this.currentLog.level, msg: this.currentLog.msg, timestamp: timestring, data: JSON.stringify(data, null, 2) }))
+      const data = JSON.stringify(this.currentLog.data, null, 2)
+      const { app, level, msg } = {  msg: 'unknown.event', level: 'info', app: this.appName, ...this.currentLog }
+      console.log(format.interpolate({ app, level, msg, timestamp: timestring, data }))
     }
   }
 
@@ -144,10 +138,10 @@ export class Logger {
   }
   withRequest(req) {
     this.requestStart = +new Date()
-    if (req.headers['x-request-id']) this.withRequestId(req.headers['x-request-id'])
-    if (req.headers['x-session-id']) this.withSessionId(req.headers['x-session-id'])
-    if (req.headers['x-user-id']) this.withUserId(req.headers['x-user-id'])
-    if (req.headers['x-client-id']) this.withClientId(req.headers['x-client-id'])
+    if (req.headers['x-request-id'])  this.withRequestId(req.headers['x-request-id'])
+    if (req.headers['x-session-id'])  this.withSessionId(req.headers['x-session-id'])
+    if (req.headers['x-user-id'])     this.withUserId(req.headers['x-user-id'])
+    if (req.headers['x-client-id'])   this.withClientId(req.headers['x-client-id'])
     return this.context({ request: {
       start: this.requestStart,
       uri: {
@@ -168,7 +162,7 @@ export class Logger {
         forwardedHost: req.headers['x-forwarded-host'],
         realIp: req.headers['x-real-ip']
       },
-      bodyUsed: (!!req.body) ? '<empty>' : (typeof req.body === 'string') ? req.body : JSON.stringify(req.body)
+      bodyUsed: (!!req.body) ? '<empty>' : ((typeof req.body === 'string') ? req.body : JSON.stringify(req.body)).length
     }})
   }
 }

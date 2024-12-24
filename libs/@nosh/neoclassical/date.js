@@ -1,4 +1,5 @@
-import nengo from 'inc/nengo.json'
+import nengo from './inc/nengo.json'
+import { O_O } from "@@nosh-libs/unhelpfully"
 class NDate {
 
   // Accepts: nothing; utime; date string; intervals
@@ -13,7 +14,7 @@ class NDate {
   static parse(str) {
     // parse non-standard options
     if (str.match(/(\d{2}[\/-]){2}\d{4}/)) {
-      if (self.systemlocale.include('US')) {
+      if (/US/i.test(this.systemlocale ?? '')) {
         const [month, day, year] = str.split(/[\/-]/);
         return new NDate(new Date(year, month - 1, day))
       } else {
