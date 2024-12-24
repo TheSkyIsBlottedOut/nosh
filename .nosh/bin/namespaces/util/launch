@@ -1,0 +1,19 @@
+#!/usr/bin/env zsh
+#- nosh util:launch [app] - Launches a nosh app.
+#  &description: Launches a nosh app. The app must have a launch.(ts|js) file in its root directory.
+
+# &usage: nosh util:launch [app]
+
+if [[ -z "$1" || "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
+  echo "Usage: nosh util:launch [app]"
+  exit 0
+fi
+
+App="$1"
+if [[ ! -d "$Nosh_AppDir/app/$App" ]]; then
+  scrawl 'error' "The app '$App' does not exist."
+  exit 1
+fi
+
+cd "$Nosh_AppDir/app/$App"
+ls launch.* | bun run

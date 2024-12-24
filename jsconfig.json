@@ -5,8 +5,8 @@
     "allowArbitraryExtensions": true,
     "checkJs": true,
     "jsx": "react-jsx",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -19,7 +19,7 @@
       "@@libs/*": ["libs/*"],
       "@@tk/*": ["tk/*"],
       "@@data/*": ["data/*"],
-      "$graybin/*": ["apps/graybin/*"],
+      "$g/*": ["apps/graybin/*"],
       "@@nosh/libs/*": ["libs/.nosh/*"],
       "@@nosh/tk/*": ["tk/.nosh/*"]
     }

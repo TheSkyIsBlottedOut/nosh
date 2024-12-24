@@ -1,5 +1,5 @@
 const _ = (x=null) => Object.create(x);
-const O_O = _('O_O')
+const O_O = _({O: 0})
 O_O.fn = _(); O_O.fn.curry = (fn, ...a) => (...b) => fn(...a, ...b)
 O_O.fn.fnize = (fo) => typeof fo === 'function' ? fo : () => fo;
 O_O.fn.def = O_O.fn.curry(Object.defineProperty)

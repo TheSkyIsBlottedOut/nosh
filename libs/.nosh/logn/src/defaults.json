@@ -1,0 +1,19 @@
+{
+  "logger": {
+    "file": {
+      "name": ":app.:time.log",
+      "format": "jsonl",
+      "fileNameTimeFormat": "%Y.%m.%d",
+      "jsonlines": true,
+      "timestampTime": "utc"
+    },
+    "console": {
+      "level": "debug",
+      "format": "[:time] :level :event :message\n:data",
+      "colorize": true,
+      "pretty": true,
+      "compact": true,
+      "timestampTime": "relative"
+    }
+  }
+}

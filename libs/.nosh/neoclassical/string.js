@@ -11,7 +11,7 @@ class NString extends String {
   get bytes() { return new NArray(this.split('').map(x => x.charCodeAt(0))); }
   get hexbytes() { return new NArray(this.bytes.map(x => x.toString(16))); }
   get base64() { return btoa(this); }
-
+  matches(regex) { return this.match(regex); }
   get utf8() { return unescape(encodeURIComponent(this)); }
   chunk(n) { return new NArray(this.match(new RegExp(`.{1,${n}}`, 'g'))); }
   get isPalindrome() { return this.alphanumeric_only === this.alphanumeric_only.reversed; }
