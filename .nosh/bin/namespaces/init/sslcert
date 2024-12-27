@@ -1,0 +1,91 @@
+#!/usr/bin/env zsh
+#- nosh init:sslcert <sslcertname> --country=US --state=California --locality=San_Francisco --organization=Example_Corporation --organizational-unit=Example_Department --common-name=example.com --
+#  &description This script generates a self-signed SSL certificate for the specified domain name.
+#  &... The certiificate is stored in the .nosh/etc/ssl directory.
+#  &... The certificate is valid for 4 years (365 * 4 + 1 days)
+#  &usage: nosh init:sslcert example.com --country=US --state=California --locality=San_Francisco --organization=Example_Corporation --organizational-unit=Example_Department --common-name=example.com
+
+# Parse the command line arguments
+zparseopts -D -E -A options -country= -state= -locality= -org= -organization= -organizational-unit= -common-name= -department -dept -hostname -domain
+
+if [[ $(which openssl) == "" ]]; then
+  echo "The openssl command is not installed. Please install it before running this script."
+  exit 1
+fi
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: nosh init:sslcert <sslcertname> --country=[default US] --state=[default Texas] --locality=[default Dallas] --organization|-org=<orgname> --organizational-unit|dept|department=Example_Department --common-name|hostname|domain=example.com"
+  exit 1
+fi
+mkdir -p "${Nosh_Config}/ssl/cert/CA"
+mkdir -p "${Nosh_Config}/ssl/cert/localhost"
+mkdir -p "${Nosh_Config}/ssl/cert/${1}"
+# Are we a provisional certificate authority?
+if [[ ! -f "${Nosh_Config}/ssl/cert/CA/CA.key" ]]; then
+  scrawl 'alert' 'nosh.ssl.ca.cert.gen' "We are not a provisional certificate authority. Yet. Please respond to any prompts from the following command:"
+  cd "${Nosh_Config}/cert/ssl/CA"
+  openssl ecparam -name secp384r1 -genkey -out CA.key
+fi
+
+
+# Set the default values
+SSLCountry=${options[-country]:-US}
+SSLState=${options[-state]:-Texas}
+SSLLocality=${options[-locality]:-Dallas}
+SSLOrganization=${options[-org]:-${options[-organization]:-ArtificialOil}}
+SSLOrganizationalUnit=${options[-dept]:-${options[-department]:-${options[-organizational-unit]:-Engineering}}}
+SSLCommonName=${options[-hostname]:-${options[-domain]:-${options[-common-name]:-example.com}}}
+
+
+
+# Create a localhost certificate
+if [[ ! -f "${Nosh_Config}/cert/localhost/localhost.key" ]]; then
+  scrawl 'alert' 'nosh.ssl.localhost.cert' "Setting up a certificate for localhost, so you can visit https://localhost without any warnings."
+  mkdir -p "${Nosh_Config}/cert/localhost"
+  cd "${Nosh_Config}/cert/localhost"
+  # are we on a class c or b internal network?
+  DNS2=""
+  [[ ! -z "$(ifconfig | grep 192 | awk '{print $2};')" != "" ]] && DNS2="DNS.2 = 192.168.0.1"
+  [[ ! -z "$(ifconfig | grep 10\.0 | awk '{print $2};')" != "" ]] && DNS2="DNS.2 = 10.0.0.1"
+  touch localhost.ext
+  cat >> localhost.ext <<-:
+    authorityKeyIdentifier=keyid,issuer
+    basicConstraints=CA:FALSE
+    keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+    subjectAltName = @alt_names
+    [alt_names]
+    DNS.1 = localhost
+    ${DNS2}
+    IP.1 = 127.0.0.1
+    IP.2 = ::1
+:
+
+  # First the localhost certificate
+  cd "${Nosh_Config}/ssl/cert/localhost"
+  openssl req -x509 -nodes -days 1461 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 \
+    -keyout "${Nosh_Config}/cert/localhost/localhost.key" -out "${Nosh_Config}/cert/localhost/localhost.crt" \
+    -subj "/C=${SSLCountry}/ST=${SSLState}/L=${SSLLocality}/O=${SSLOrganization}/OU=${SSLOrganizationalUnit}/CN=localhost" \
+    -config "${Nosh_Config}/cert/ssl/localhost/localhost.ext"
+
+
+
+LocalIpAddress="$(ifconfig | grep 'inet\s' | grep -v 127\.0\.0\.1 | awk '{print $2};')"
+cd "${Nosh_Config}/ssl/cert/${1}"
+cat >> "${1}.ext" <<-:
+  authorityKeyIdentifier=keyid,issuer
+  basicConstraints=CA:FALSE
+  keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+  subjectAltName = @alt_names
+  [alt_names]
+  DNS.1 = ${1}
+  DNS.2 = www.${1}
+  DNS.3 = *.${1}
+  IP.1 = ${LocalIpAddress}
+  IP.2 = ::1
+:
+
+# Generate the SSL certificate
+openssl req -x509 -nodes -days 1461 -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 \
+  -keyout ~/.nosh/etc/ssl/${1}.key -out ~/.nosh/etc/ssl/${1}.crt \
+  -subj "/C=${SSLCountry}/ST=${SSLState}/L=${SSLLocality}/O=${SSLOrganization}/OU=${SSLOrganizationalUnit}/CN=${SSLCommonName}" \
+  -config ~/.nosh/etc/ssl/${1}/${1}.ext

@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+#- nosh sanity:gpg - Ensures gpg is installed.
+[[ -z $(which gpg) ]] && nosh sanity:install gpg

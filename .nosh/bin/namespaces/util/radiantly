@@ -1,0 +1,7 @@
+#!/usr/bin/env zsh
+#- nosh util:radiantly "this script should be colorful"
+# &description: Randomly colorizes the printed content.
+# &usage: nosh util:radiantly "this script should be colorful"
+source "$Nosh_LibDir/consolation.zsh"
+
+__nosh_pinatatype "$1"
