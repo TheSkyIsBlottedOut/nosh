@@ -1,5 +1,6 @@
 import * as Neo from 'neoclassical'
 import { pragma } from 'pragma'
+import { handleRequest } from 'helpers'
 
 /*
   Using the app's configuration, we need to initialize the Bun server for both
@@ -23,40 +24,35 @@ import { pragma } from 'pragma'
 */
 
 class Freebooter {
+
   constructor(config) {
-    this.config = config
-    this.app = config.name
+    this.config = config || {}
+    this.app = config.name ?? 'app'
     this.logger = new Logger(this.app)
-    this.router = O_O.fn.obj
-    this.pragma = pragmas
-    this.logger.config = config.logger
-    this.logger.log('info', 'boot.sequence.initiated')
+    this.approot = null
+    this.router = { pages: null, static: null, defined: null }
+    this.pragma = pragma
+    this.logger.config(this.config.logger || {})
+    this.logger.info('boot.sequence.initiated')
   }
 
   async loadFSData() {
-    this.logger.log('info', 'boot.sequence.fsdata.load.start')
-    this.repoRoot = await this.findRepoRoot
+    this.logger.info('boot.sequence.fsdata.load.start')
+    this.repoRoot = process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
     this.appRoot = `${this.repoRoot}/apps/${this.app}`
     this.logger.log('info', 'boot.sequence.fsdata.load.end')
-  }
-  async get findRepoRoot() {
-    return process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
   }
 
   pageRouting() {
     // this is where we'll set up the filesystem routing for jsx pages
-    this.router.pages ??= Bun.FileSystemRouter({
-      style: 'nextjs',
-      dir: `${this.appRoot}/${this.config.routes.views}`
-    })
+    if (!this.config?.routes?.views) return
+    this.router.pages ??= Bun.FileSystemRouter({ style: 'nextjs', dir: `${this.appRoot}/${this.config.routes.views}` })
   }
 
   staticRouting() {
-    if (this.router.static) return this.router.static
-    if (!this.config.routes.static) return { dir: `${this.appRoot}/public` }
-    this.router.static ??= Bun.StaticRouter({
-      dir: `${this.appRoot}/${this.config.routes.static}`
-    })
+    if (!this.config?.routes?.static) return []
+    this.router.static ??= Bun.StaticRouter({ dir: `${this.appRoot}/${this.config.routes.static}` })
+    return this.router.static
   }
 
   // named routes are configured app-relative dynamic includes which return the following
@@ -71,37 +67,40 @@ class Freebooter {
   // cors: (defaults to false; whether or not this route allows cross-origin requests);
 
   async namedRouting() {
-    if (!!this.router.defined) return this.routes.defined
-    if (this.config.routes.named && Array.isArray(this.config.routes.named.paths)) {
-      const routesources = this.config.routes.named.paths.map(async path => {
-        const source = await import(`${this.appRoot}/${path}`).then(({ routes }) => routes)
-        return source
-      }
-      this.router.defined = await Promise.allSettled(routesources).then(results => this.seek(...results)).then(routedefs => routedefs.flat())
-      this.router.defined.forEach(route => { this.logger.info('route.named.discovered', { path: route.path, method: route.method }) })
-    }
-    return this.router.defined
-  } else { return [] }
+    this.logger.log('info', 'boot.sequence.namedroutes.load.start')
+
+
+    if (Array.isArray(this.router.defined)) return this.router.defined
+    if (!this.config?.routes?.named?.paths) return []
+    if (!Array.isArray(this.config?.routes?.named?.paths)) return []
+    const rps = this.config.routes.named.paths.map(path => `${this.appRoot}/${path}`)
+    const rs = rps.map(async (path) => { return await import(path).then(({ routes }) => routes) })
+
+
+    this.router.defined = await Promise.allSettled(rs).then(r => this.seek(...r)).then(a => a.flat())
+    this.router.defined.forEach(route => { const {path, method} = route; this.logger.data({path, method}).info('route.load') })
+    return this.router.defined ?? []
+  }
 
   seek(...target) {
-    return target.map(t => {
-      if (typeof t !== 'object' || Object.keys(t).length < 3) return
+    const results = []
+    target.map((t) => {
       if (Array.isArray(t)) return this.seek(...t)
+      if (typeof t !== 'object' || Object.keys(t).length < 3) return []
       const keys = Object.keys(t)
-      const results = []
-      keys.forEach(key => (['handler', 'method', 'path'].includes(key)) ? results.push(t) : return this.seek(Object.values(t[key])))
-      return results
+      ['handler', 'method', 'path'].every((k) => keys.includes(k)) ? results.push(t) : results.push(...this.seek(Object.values(t)))
     })
+    return results.flat()
   }
 
   async loadRoutes() {
     this.logger.log('info', 'boot.sequence.routes.load.start')
     this.pageRouting()
     this.staticRouting()
+    await this.namedRouting()
+    // start bun here
     this.logger.log('info', 'boot.sequence.routes.load.end')
   }
-
-
 
 
 }
