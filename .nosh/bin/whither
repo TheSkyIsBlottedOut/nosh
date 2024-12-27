@@ -18,13 +18,11 @@ __filetype_for() {
   case $Filetype in
     etc|config|templates) echo "$Nosh_AppDir/.nosh/etc" ;;
     bin|nosh|bins|scripts) echo "$Nosh_AppDir/.nosh/bin" ;;
-    zsh|shell|cli|autoload) echo "$Nosh_LibDir/zsh" ;;
     logs|log|logfile) echo "$Nosh_AppDir/logs" ;;
     workspace|ws|packages|libs) echo "$Nosh_AppDir/pkg";;
     website|app|web) echo "$Nosh_AppDir/app" ;;
-    nosh-config|nosh-configs|nosh-configurations) echo "$Nosh_AppDir/.nosh/etc/nosh.yml"
-    zlogs) echo "$Nosh_LibDir/zsh/logging.zsh";;
-    z*) echo "$Nosh_LibDir/zsh/$Filetype.zsh";;
+    nosh-config|nosh-configs|nosh-configurations) echo "$Nosh_AppDir/.nosh/etc/nosh.yml";;
+    z*) echo "$Nosh_LibDir/$( echo "$Filetype" | sed 's/^z//').zsh";;
     aliases) echo "$Nosh_EtcDir/.aliases";;
     tmp|temp|temporary) echo "$Nosh_AppDir/.nosh/tmp";;
     *) return 1 ;;

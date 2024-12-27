@@ -1,10 +1,28 @@
 
+
 __nosh_internal_ckey() {
   # returns or generates a consistent key for this repository.
   if [[ ! -f "${Nosh_Config}/.nosh.cyk" ]]; then
-    echo "nosh-$(date +%s | sha256sum | base64 | head -c 32)" > "${Nosh_Config}/.nosh.cyk"
+    export GNUPGHOME="${Nosh_Config}"
+    cat > "${Nosh_Config}/.nosh.cyk" <<-EOF
+    %echo "Generating a new encryption key for this repository."
+    Key-Type: EDDSA
+    Key-Length: 256
+    Subkey-Type: EDDSA
+    Subkey-Length: 256
+    Name-Real: Nosh Holistic Automatons
+    Name-Comment: I am a real person
+    Name-Email: fall@vintagedogma.net
+    Expire-Date: 0
+    Passphrase: "$($Nosh_AppDir/tk/bin/incomprehensibly "this.time we make.war on heavenitself")"
+    %commit
+    %echo "Key generated."
+EOF
+    gpg --batch --generate-key "${Nosh_Config}/.nosh.cyk"
+    gpg --export --armor -r "${Nosh_Config}/keyring.mdx" > "${Nosh_Config}/cert/pub/nosh.gpg"
+    mv "${Nosh_Config}/pubring.kbx" "${Nosh_Config}/cert/priv/nosh.pubring.kbx"
   fi
-  cat "${Nosh_Config}/.nosh.cyk"
+  echo "${Nosh_Config}/cert/priv/nosh.pubring.kbx"
   return 0
 }
 
@@ -13,7 +31,8 @@ __nosh_encrypt_string() {
   # Usage: __nosh_encrypt_string "string"
   # Returns: Encrypted string.
   local $1
-  echo "$1" | openssl enc -aes-256-cbc -a -salt -pass pass:$(__nosh_internal_ckey)
+  gpg --import "${Nosh_Config}/cert/priv/nosh.pubring.kbx"
+  echo "$1" | gpg --encrypt --armor -r "fall" | base64 | head -n $(($(wc -l) - 1)) } | tail -n $(($(wc -l) - 1)) | tr '\n' '∑'
   return 0
 }
 
@@ -22,7 +41,7 @@ __nosh_decrypt_string() {
   # Usage: __nosh_decrypt_string "string"
   # Returns: Decrypted string.
   local $1
-  echo "$1" | openssl enc -aes-256-cbc -a -d -salt -pass pass:$(__nosh_internal_ckey)
+  echo "-----BEGIN PGP MESSAGE-----\n$( echo "$1" | tr '∑' '\n' )\n-----END PGP MESSAGE-----" | base64 -d | gpg --decrypt --armor
   return 0
 }
 

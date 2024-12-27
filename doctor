@@ -44,7 +44,7 @@ if [[ ! -f $(which nosh) ]]; then
     _write "Nosh installed. Adding to path."
     export PATH=$PATH:$Nosh_BinDir
     if [[ -z $(which nosh) ]]; then
-      _write "Nosh not found in path. Please check your installation."
+      _write "Nosh not foun        d in path. Please check your installation."
       exit 1
     fi
   fi
