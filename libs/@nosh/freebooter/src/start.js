@@ -1,7 +1,5 @@
-import { O_O } from 'unhelpfully'
 import * as Neo from 'neoclassical'
-import { Logger } from 'logn'
-
+import { pragma } from 'pragma'
 
 /*
   Using the app's configuration, we need to initialize the Bun server for both
@@ -29,6 +27,8 @@ class Freebooter {
     this.config = config
     this.app = config.name
     this.logger = new Logger(this.app)
+    this.router = O_O.fn.obj
+    this.pragma = pragmas
     this.logger.config = config.logger
     this.logger.log('info', 'boot.sequence.initiated')
   }
@@ -42,33 +42,65 @@ class Freebooter {
   async get findRepoRoot() {
     return process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
   }
-\
+
   pageRouting() {
     // this is where we'll set up the filesystem routing for jsx pages
-    Bun.FileSystemRouter({
+    this.router.pages ??= Bun.FileSystemRouter({
       style: 'nextjs',
       dir: `${this.appRoot}/${this.config.routes.views}`
     })
   }
 
   staticRouting() {
-    // this is where we'll set up the static routing for public files
-    Bun.StaticRouter({
+    if (this.router.static) return this.router.static
+    if (!this.config.routes.static) return { dir: `${this.appRoot}/public` }
+    this.router.static ??= Bun.StaticRouter({
       dir: `${this.appRoot}/${this.config.routes.static}`
     })
   }
 
-  definedRoutes() {
-    // this is where a route will map to a predefined function or Bun.file/Bun.jsx call.
-    // the config's routes object should have a single export with json objects:
-    // { path: '/route/:param', method: 'GET', handler: fn, preflights?: [fn1, fn2],
-    //    unauthenticated: bool, withoutApiKey: bool, preflights: ['id', 'token', 'querystring'] }
-    // the handler function can be async and return a promise
+  // named routes are configured app-relative dynamic includes which return the following
+  // format: an object or array of any structure containing objects with:
+  // { path: /path/to/thing/:param, handler: fn }. The handler can be async.
+  // This item also has the following optional arguments:
+  // method: (defaults to 'get');
+  // preflights: (defaults to undefined; an array of values to check for using multisource);
+  // unauthenticated: (defaults to false; whether or not this route requires user (jwt) authentication, which is set in the cookie appname-nauth);
+  // withoutApiKey: (defaults to false; whether or not this route requires an api key; otherwise, the ncli must be passed);
+  // bots: (defaults to false; whether or not this route allows bots);
+  // cors: (defaults to false; whether or not this route allows cross-origin requests);
 
-    if (this.config.routes.api) {
-      // iterate over the api routes and set them up
+  async namedRouting() {
+    if (!!this.router.defined) return this.routes.defined
+    if (this.config.routes.named && Array.isArray(this.config.routes.named.paths)) {
+      const routesources = this.config.routes.named.paths.map(async path => {
+        const source = await import(`${this.appRoot}/${path}`).then(({ routes }) => routes)
+        return source
+      }
+      this.router.defined = await Promise.allSettled(routesources).then(results => this.seek(...results)).then(routedefs => routedefs.flat())
+      this.router.defined.forEach(route => { this.logger.info('route.named.discovered', { path: route.path, method: route.method }) })
     }
+    return this.router.defined
+  } else { return [] }
+
+  seek(...target) {
+    return target.map(t => {
+      if (typeof t !== 'object' || Object.keys(t).length < 3) return
+      if (Array.isArray(t)) return this.seek(...t)
+      const keys = Object.keys(t)
+      const results = []
+      keys.forEach(key => (['handler', 'method', 'path'].includes(key)) ? results.push(t) : return this.seek(Object.values(t[key])))
+      return results
+    })
   }
+
+  async loadRoutes() {
+    this.logger.log('info', 'boot.sequence.routes.load.start')
+    this.pageRouting()
+    this.staticRouting()
+    this.logger.log('info', 'boot.sequence.routes.load.end')
+  }
+
 
 
 

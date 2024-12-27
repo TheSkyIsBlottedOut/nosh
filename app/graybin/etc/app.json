@@ -6,7 +6,7 @@
       "path": "public",
       "options": { "maxAge": 0 }
     },
-    "api": "api",
+    "named": { "paths": ["api"] },
     "views": "scenes"
   },
   "middleware": {

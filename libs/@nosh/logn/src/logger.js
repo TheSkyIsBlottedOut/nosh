@@ -21,6 +21,8 @@ export class Logger {
 
   constructor(appname) {
     this.app = appname
+    this.#logfile = Bun.file(`${LogDir}/${this.logfilename}`)
+    this.#writer = this.#logfile.writer
     this.#logs = []
     this.#config = {}
     this.appStart = +new Date()
@@ -38,7 +40,7 @@ export class Logger {
   async writeLogsToFile() {
     const logs = this.#logs.filter(log => LogLevel[log.level] >= LogLevel[this.config.file.level]).map(log => JSON.stringify(log)).join('\n')
     this.logs = []
-    await $`mkdir -p ${LogDir} && touch ${this.logfile} && echo "${logs}" >> ${this.logfile}`
+    await this.#writer.write(logs)
   }
   set config(cfg) { this.#config = { ...this.#config, ...cfg } }
   get config() { return { ...defaultConfig, ...this.#config}}
