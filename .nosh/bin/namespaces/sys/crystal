@@ -1,0 +1,32 @@
+#!/usr/bin/env zsh
+#- nosh sys:crystal - Manages crystal - builds, installs, and inits new projects.
+# &usage: nosh sys:crystal init [project_name] - Adds a new crystal repo to the tk directory.
+# &usage: nosh sys:crystal build [project_name] - Builds a crystal project in tk, with the binary going to tk/bin.
+
+[[ $(nosh sanity:crystal) -ne 0 ]] && exit 1
+
+[[ -z "$1" || "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]] && echo "Usage: nosh sys:crystal [init|build] [project_name]" && exit 0
+TK="$Nosh_AppDir/tk"
+case "$1" in
+  init)
+    [[ -z "$2" ]] && echo "Usage: nosh sys:crystal init [project_name]" && exit 1
+    [[ -d "$TK/crystal/$2" ]] && echo "Project $2 already exists." && exit 1
+    mkdir -p $TK/crystal/$2
+    cd $TK/crystal/$2
+    crystal init app "$2" . "${@:3}"
+    exit 0
+    ;;
+  build)
+    [[ -z "$2" ]] && echo "Usage: nosh sys:crystal build [project_name]" && exit 1
+    [[  ! -d "$TK/crystal/$2" ]] && echo "Project $2 does not exist." && exit 1
+    [[ ! -f "$TK/crystal/$2/src/$2.cr" ]] && echo "Project $2 does not have a src/$2.cr file." && exit 1
+    [[ ! -d "$TK/bin" ]] && mkdir -p $TK/bin
+    cd $TK/crystal/$2
+    crystal build src/$2.cr -o $TK/bin/$2
+    exit 0
+    ;;
+  *)
+    echo "Usage: nosh sys:crystal [init|build] [project_name]"
+    exit 1
+    ;;
+esac

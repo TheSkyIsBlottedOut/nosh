@@ -1,0 +1,26 @@
+#!/usr/bin/env zsh
+#- nosh sanity:crystal - Ensures crystal is installed.
+
+[[ -z $(which crystal) ]] && nosh sanity:install crystal && nosh sanity:install shards
+Managers=( "$(nosh sys:pkgmgr)" )
+__found(){
+  local Mgr="$1"
+  for i in "${Managers[@]}"; do
+    [[ "$i" == "$Mgr" ]] && return 0
+  done
+  return 1
+}
+
+
+__found "brew" && brew install crystal && exit 0
+__found "apt" && sudo apt install crystal && exit 0
+__found "apt-get" && sudo apt-get install crystal && exit 0
+__found "apk" && apk add crystal shards && exit 0
+__found "dnf" && sudo dnf install crystal shards && exit 0
+__found "emerge" && sudo emerge -a dev-lang/crystal && exit 0
+__found "pacman" && sudo pacman -S crystal shards && exit 0
+__found "snap" && snap install crystal --classic && exit 0
+__found "asdf" && asdf plugin add crystal && asdf install crystal latest && exit 0
+$(which curl 2>/dev/null) -fsSL https://install.crystal-lang.org | $(which zsh 2>/dev/null) && exit 0
+scrawl error nosh.sanity.crystal "No package manager found to install crystal."
+exit 1

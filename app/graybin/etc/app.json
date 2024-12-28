@@ -1,15 +1,16 @@
 {
   "name": "graybin",
   "port": 7070,
-  "devmodeWhen": 
-  "ssl": {
-    "enabled": true,
-    "configuration": "nosh",
-    "useLocalhostCertInDevMode": true
+  "devmode": {
+    "ssl": {
+      "enabled": true,
+      "configuration": "nosh",
+      "useLocalhostCertInDevMode": true
+    }
   },
   "routes": {
     "static": {
-      "path": "public",
+      "paths": ["public"],
       "options": { "maxAge": 0 }
     },
     "named": { "paths": ["api"] },

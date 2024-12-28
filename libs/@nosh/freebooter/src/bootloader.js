@@ -1,6 +1,6 @@
 import * as Neo from 'neoclassical'
 import { pragma } from 'pragma'
-import { handleRequest } from 'helpers'
+import { readdir } from 'node:fs/promises'
 
 /*
   Using the app's configuration, we need to initialize the Bun server for both
@@ -47,10 +47,18 @@ class Freebooter {
     this.router.pages ??= Bun.FileSystemRouter({ style: 'nextjs', dir: `${this.appRoot}/${this.config.routes.views}` })
   }
 
-  staticRouting() {
-    if (!this.config?.routes?.static) return []
-    this.router.static ??= Bun.StaticRouter({ dir: `${this.appRoot}/${this.config.routes.static}` })
-    return this.router.static
+  async staticRouting() {
+    if (!this.config?.routes?.static?.paths) return []
+    const _cfgptr = this.config.routes.static.paths
+    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [ _cfgptr ]
+    const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
+    const _files = await Promise.all(_absdir.map(async dir => { return [dir, await readdir(dir)] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
+    const _flattened = _files.flat()
+    this.logger.data({ _flattened }).info('static.files')
+    this.router.static = _flattened.reduce((acc, file) => {
+      acc[file] = new Response(await Bun.file(file).read())
+      return acc
+    }, {})
   }
 
   // named routes are configured app-relative dynamic includes which return the following

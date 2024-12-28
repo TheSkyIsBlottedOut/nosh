@@ -86,7 +86,7 @@ class ResponseBuilder {
     return { status: this.#status, message: this.#message, data: this.#data }
   }
 
-  get response() { return new Response(this.payload) }
+  get response() { return new Response.json(this.payload) }
   get end() { return this.response }
 }
 
@@ -115,11 +115,28 @@ const preflightChecks = (req, preflights, idents) => {
   return validator
 }
 
+export const bruteForceAppRoot = async (req) => {
+  if (!!process.env.Nosh_AppRoot) return process.env.Nosh_AppRoot
+  const path_with_nosh = await $`FPT='.' && cd ${import.meta.dirname} && while [[ ! -d $FPT/.nosh && $(realpath "$FPT") != "/" ]]; do FPT="$FPT/.."; done && echo "$(realpath "${FPT}")"`.text().trim()
+  if (path_with_nosh == '/') return null
+  return path_with_nosh
+}
+
+const findNoshBin = async (req) => {
+  if (!!process.env.Nosh_BinDir) return [process.env.Nosh_BinDir, 'nosh'].join('/')
+  const approot = await bruteForceAppRoot(req)
+  if (!approot) return null
+  return [approot, '.nosh/bin/nosh'].join('/')
+}
+
+
 const createHelpers = async (req) => {
   const body = await req.json() ?? {}
   const req_with_body = Object.assign(req, { body })
   const retval = {
     body, req, req_with_body,
+    _nosh: await findNoshBin(req),
+    nosh: async (cmd) => await $`${retval._nosh ?? 'nosh'} ${cmd}`.then(r => { return { text: r.text(), logout: r.stderr } }).catch(errors => ({errors})
     identifiers: identify(req_with_body),
     multisource: O_O.fn.curry(multisource, req_with_body),
     log: pragma.logger.withRequest(req_with_body).withRequestId(idents.request),
@@ -130,7 +147,7 @@ const createHelpers = async (req) => {
   return retval
 }
 
-const handleRequest = async (req, requesthandlerdefintion) => {
+const handleApiRequest = async (req, requesthandlerdefintion) => {
   // expand request, do preflights, log, call endpoint, validate response
   const helpers = await createHelpers(req)
   const { handler, preflights, unauthenticated, withoutApiKey, bots, cors } = requesthandlerdefintion
@@ -152,4 +169,14 @@ const handleRequest = async (req, requesthandlerdefintion) => {
   return response
 }
 
-export { handleRequest }
+const Pages = new Map()
+
+const handleFSRouterRequest = async (req, fsrouter) => {
+  const helpers = await createHelpers(req)
+  const uri = req.
+  // auth states must be handled internally; we will just pass the helpers along
+  if (!fsrouter.match(req)) return helpers.res.status(401).message('page.not.found').end
+  if Pages.get(
+}
+
+export { handleApiRequest }
