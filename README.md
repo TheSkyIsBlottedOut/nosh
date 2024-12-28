@@ -1,4 +1,4 @@
-# Nosh
+# Nosh: Nightly Release Repo
 
 ## A Paranoid Monorepo
 
