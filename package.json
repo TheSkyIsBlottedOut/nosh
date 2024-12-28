@@ -8,7 +8,7 @@
   "version": "0.0.2",
   "license": "SEE LICENSE IN https://gist.github.com/TheSkyIsBlottedOut/ee11fa06ca4a76870c71ee6ca0adfeb7#file-tos-vdv2-md",
   "engines": {
-    "bun": ">=0.0.1"
+    "bun": ">=1.1.38"
   },
   "bin": {
     "nosh": ".nosh/bin/nosh",
@@ -26,7 +26,7 @@
     "packages": ["libs/*"]
   },
   "devDependencies": {
-    "bun": "^0.0.1",
+    "bun": "^1.1.38"
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -8,7 +8,7 @@
   "version": "0.0.1",
   "license": "inherit",
   "engines": {
-    "bun": ">=0.0.1"
+    "bun": ">=1.1.38"
   },
   "dependencies": {
     "logn": "workspace:@nosh/logn",

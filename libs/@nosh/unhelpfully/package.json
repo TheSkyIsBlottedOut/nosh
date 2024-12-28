@@ -3,6 +3,6 @@
   "description": "A toolkit of common utilities for javascript.",
   "main": "index.js",
   "type": "module",
-  "engines": { "bun": ">=0.0.1", "node": ">=16.0.0" }
+  "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" }
 
 }
