@@ -43,14 +43,14 @@ class BunServer {
     }
   }
 
-  async middleware(req, routedef) {
-
+  async start() {
+    await this.initServer()
+    await this.#server.start({ port: this.config.port })
+    pragma.logger.info(`Server started on port ${this.config.port}`)
   }
-  }
-
 
   async initServer() {
-    return Bun.serve({
+    this.#server = Bun.serve({
       port: this.config.port,
       static: this.boot.router.static,
       fetch: (req) => {
@@ -62,11 +62,9 @@ class BunServer {
           const { handler, method } = api_route
           return await handleApiRequest(req, api_route)
         } else if (this.boot.router.pages && this.boot.router.pages.match(pathname)) {
-
           return this.boot.router.pages[pathname]
         }
+      }
     })
   }
-
-
 }

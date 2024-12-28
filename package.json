@@ -5,18 +5,17 @@
   "type": "module",
   "private": true,
   "keywords": ["bun", "pastebin", "nosh"],
-  "version": "0.0.1",
-  "license": "SEE LICENSE IN https://gist.github.com/TheSkyIsBlottedOut/ee11fa06ca4a76870c71ee6ca0adfeb7#file-tos-vdv2-md",
-  "engines": {
-    "bun": ">=0.0.1"
-  },
+  "version": "0.0.2",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" },
   "bin": {
     "nosh": ".nosh/bin/nosh",
-    "scrawl": ".nosh/bin/scrawl"
+    "scrawl": ".nosh/bin/scrawl",
+    "incomprehensibly": "tk/bin/incomprehensibly"
   },
   "author": {
     "name": "the fall of man",
-    "email": "developer@iswork.in"
+    "email": "fall@vintagedogma.net"
   },
   "repository": {
     "type": "git",
@@ -26,7 +25,7 @@
     "packages": ["libs/*"]
   },
   "devDependencies": {
-    "bun": "^0.0.1",
+    "bun": "^1.1.38",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
