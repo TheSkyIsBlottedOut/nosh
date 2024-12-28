@@ -15,7 +15,7 @@
     "scrawl": ".nosh/bin/scrawl"
   },
   "author": {
-    "name": "the dev"
+    "name": "TheSkyIsBlottedOut",
     "email": "developer@iswork.in"
   },
   "repository": {
@@ -26,7 +26,7 @@
     "packages": ["libs/*"]
   },
   "devDependencies": {
-    "bun": "^1.1.38"
+    "bun": "^1.1.38",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
