@@ -1,0 +1,9 @@
+{
+  "name": "neoclassical",
+  "description": "A toolkit of common utilities for javascript.",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "unhelpfully": "unhelpfully:0.0.1"
+  }
+}

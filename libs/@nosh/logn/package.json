@@ -1,0 +1,9 @@
+{
+  "name": "logn",
+  "description": "nosh's logging system.",
+  "main": "index.js",
+  "type": "module",
+  "private": false,
+  "keywords": ["logging", "nosh", "bun"],
+  "version": "0.0.1"
+}

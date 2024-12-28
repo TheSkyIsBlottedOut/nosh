@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/.git": false,
+    "**/.svn": false,
+    "**/.hg": false,
+    "**/CVS": false,
+    "**/.DS_Store": false,
+    "**/Thumbs.db": false,
+    "**/local_secrets.*": false,
+    "**/._*": false,
+    "**/freebooter": false
+  }
+}

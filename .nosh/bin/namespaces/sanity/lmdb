@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+#- nosh sanity:lmdb - Ensures lmdb is installed.
+#  &description: LMDB is a fast key-value store. Bun supports sqlite out of the box;
+#  &... however, nosh also adds support for LMDB.
+#  &usage: nosh sanity:lmdb
+
+[[ -z "$(which lmdb)" ]] && nosh sanity:install lmdb
+nosh sys:module lmdb
+exit 0

@@ -2,16 +2,17 @@
 
 if [[ -z "$(which ruby &2>/dev/null)" ]]; then
   scrawl info nosh.sanity.ruby "Ruby not found. Installing."
-  nosh sanity:install:package ruby
-  nosh sanity:install:package ruby-dev
-  nosh sanity:install:package ruby-full # apt only
-  nosh sanity:install:ruby-install
-  nosh sanity:install:chruby
-  nosh sanity:install:rubygems
-  ruby-install ruby-3.2
-  chruby 3.2
+  [[ -z $(which apt) ]] && apt install ruby-full && exit 0
+  nosh sanity:install ruby
+  $( uname -a | grep -q Linux ) && nosh sanity:install ruby-dev &2>/dev/null
+  nosh sanity:install ruby-install &2>/dev/null
+  nosh sanity:install chruby &2>/dev/null
+  nosh sanity:install rubygems &2>/dev/null
+  $( which ruby-install &2>/dev/null ) && ruby-install ruby-3.2
+  $( which chruby &2>/dev/null ) && chruby 3.2
+  [[ -z "$(which bundle)"  ]]  $( which gem &2>/dev/null ) && gem install bundler
   bundle init
-  bundoe add bundler hashie pry openurl
+  bundle add hashie pry open-uri nokogiri faraday
 end
 [[ -z $(ruby -v &2>/dev/null) ]] && scrawl error nosh.sanity.ruby "Ruby not installed. Exiting." && exit 1
 scrawl info nosh.sanity.ruby "Ruby installed."

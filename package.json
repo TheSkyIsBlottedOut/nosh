@@ -1,31 +1,29 @@
 {
   "name": "@vintage-dogma/graybin",
-  "description": "A pure Bun nosh app with a secure pastebin service.",
-  "main": "lets-go.js",
+  "description": "A bun based framework with a zsh based control config"
+  "main": "nosh list"
   "type": "module",
+  "private": false,
   "keywords": ["bun", "pastebin", "nosh"],
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "SEE LICENSE IN https://gist.github.com/TheSkyIsBlottedOut/ee11fa06ca4a76870c71ee6ca0adfeb7#file-tos-vdv2-md",
   "engines": {
     "bun": ">=0.0.1"
   },
   "bin": {
-    "nosh": ".nosh/bin/nosh"
+    "nosh": ".nosh/bin/nosh",
+    "scrawl": ".nosh/bin/scrawl"
   },
   "author": {
-    "name": "the fall of man",
+    "name": "the dev"
     "email": "developer@iswork.in"
   },
   "repository": {
     "type": "git",
-    "url": "keybase://team/fintechblackops/graybin"
+    "url": "https://gist.github.com/Holistic-Dogma/nosh"
   },
-  "workspacees": {
-    "packages": ["tk/*", "app/*", "libs/**/*"]
-  },
-  "bun-create": {
-    "preinstall": "echo \"Let's gooo!\" && source .envrc",
-    "postinstall": "echo \"Use 'nosh list' to get started with commands.\""
+  "workspaces": {
+    "packages": ["libs/*"]
   },
   "devDependencies": {
     "bun": "^0.0.1",
@@ -33,17 +31,10 @@
     "react-dom": "^19.0.0"
   },
   "scripts": {
-    "publish": "npm publish --access public",
     "scoped-init": "bun init --scope=@vintage-dogma",
     "scoped-publish": "npm run publish -- --scope=@vintage-dogma",
-    "start": "bun run lets-go.js"
   },
   "dependencies": {
-    "@mui/base": "^5.0.0-beta.67",
-    "lmdb": "^3.2.0",
-    "nacl": "^0.1.3",
-    "node-rsa": "^1.1.1",
-    "qrcode": "^1.5.4",
-    "scrypt": "^6.0.3"
+
   }
 }

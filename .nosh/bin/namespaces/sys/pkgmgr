@@ -1,0 +1,46 @@
+#!/usr/bin/env zsh
+#- nosh sys:pkgmgr - Returns the name of the found installed package manager, if found.
+# &description: Returns the name of the found installed package manager, if found. This is used
+# &... in cases where different platforms have different package names.
+
+FoundPkgMgrs=()
+
+__pkgmgr_found() {
+  local $1
+ [[ -n $(which "$1") ]] && return 0 || return 1
+}
+
+__check_for() {
+  local $1
+  __pkgmgr_found $1 && FoundPkgMgrs+=($1)
+  return 0
+}
+
+
+__check_for apk
+__check_for apt
+__check_for apt-get
+__check_for brew
+__check_for choco
+__check_for cinst
+__check_for dnf
+__check_for dpkg
+__check_for emerge
+__check_for flatpak
+__check_for guix
+__check_for nix-env
+__check_for pacman
+__check_for pkg
+__check_for port
+__check_for rpm
+__check_for scoop
+__check_for snap
+__check_for winget
+__check_for yum
+__check_for zypper
+if [[ ${#FoundPkgMgrs} -eq 0 ]]; then
+  scrawl error nosh.sys.pkgmgr "No package manager found."
+  exit 1
+fi
+echo "${FoundPkgMgrs[@]}" | tr ' ' '\n' | sort | uniq
+exit 0

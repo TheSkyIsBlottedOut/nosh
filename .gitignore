@@ -6,3 +6,7 @@ logs/*
 !.nosh/usr/profiles/base.profile
 node_modules
 dist/*
+.nosh/etc/.nosh.cyk
+.nosh/etc/cert/pub/*
+.nosh/etc/cert/priv/*
+.nosh/etc/cert/ssl/*

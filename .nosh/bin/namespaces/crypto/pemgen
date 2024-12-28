@@ -19,6 +19,5 @@ else
   Passphrase="$2"
 fi
 
-ssh-keygen -t ed25519 -f $Nosh_Config/cert/priv/$KeyName -N "$Passphrase"
-openssl pkey -in $Nosh_Config/cert/priv/$KeyName -pubout -out $Nosh_Config/cert/pub/$KeyName
-scrawl 'alert' "Generated key pair for $KeyName."
+__create_permanent_pemkeys "$KeyName" "$Passphrase"
+exit 0

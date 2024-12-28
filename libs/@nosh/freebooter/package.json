@@ -1,0 +1,18 @@
+{
+  "name": "freebooter",
+  "description": "A bun.sh bootloader with bot matching and parameter validation.",
+  "main": "index.js",
+  "type": "module",
+  "private": false,
+  "keywords": ["bun", "bootloader", "nosh"],
+  "version": "0.0.1",
+  "license": "inherit",
+  "engines": {
+    "bun": ">=0.0.1"
+  },
+  "dependencies": {
+    "logn": "workspace:@nosh/logn",
+    "neoclassical": "workspace:@nosh/neoclassical",
+    "unhelpfully": "workspace:@nosh/unhelpfully"
+  }
+}

@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+#- nosh sys:module [module] - Ensures module is installed.
+#  &description: Ensures a module is installed. If it is not, it will be installed.
+#  &... If the module is not found, the script will exit with an error.
+#  &... If the module is found, the script will exit with a success.
+
+# This command should be runnable in workspaces, since they each have package.json files.
+# &usage: nosh sys:module [module]
+
+if [[ -z "$1" || "$1" == "--help" || "$1" == "-h" || "$1" == "help" ]]; then
+  echo "Usage: nosh sys:module [module]"
+  exit 0
+fi
+
+Modules=("$@")
+for Module in $Modules; do
+  if [[ ! $(bun pm ls --all | grep $Module) && ! $(bun pm ls -g --all | grep $Module) ]]; then
+    scrawl info nosh.sys.module "Installing module $Module."
+    bun add $Module
+  else
+    scrawl trace nosh.sys.module "Module $Module is already installed."
+  fi
+done
+exit 0

@@ -1,0 +1,8 @@
+#!/usr/bin/env zsh
+#- nosh sanity:pm2 - Ensures pm2 is installed.
+#  &description: Ensures pm2 is installed. If it is not, it will be installed.
+#  &... note that pm2 is not a requirement for nosh to run, it's just a convenience.
+#  &usage: nosh sanity:pm2
+
+nosh sys:module pm2
+exit 0  

@@ -1,16 +1,6 @@
 #!/usr/bin/env zsh
 #- Decrypts a string encrypted with the prefs password, which you can set as a user preference.
 
-
-if [[ -z "$Nosh__Encryption_Password" ]]; then
-  scrawl 'error' 'You must set an encryption password. Run `nosh crypto:password set [password]`.'
-  exit 1
-fi
-
-scrawl info nosh.crypto.decrypt "Decrypting string with user provided password."
-scrawl debug nosh.crypto.decrypt "Encrypted string: $1"
-
 source $(whither zncyk)
-
-openssl dec -aes-256-cbc -a -d -salt -pass pass:$(__nosh_decrypt_string "$Nosh__Encryption_Password") <<< $1
-
+echo $(__nosh_decrypt_string "$1")
+exit 0
