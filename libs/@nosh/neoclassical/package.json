@@ -1,9 +1,9 @@
 {
-  "name": "neoclassical",
+  "name": "@nosh/neoclassical",
   "description": "A toolkit of common utilities for javascript.",
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "unhelpfully": "unhelpfully:0.0.1"
+  "@nosh/unhelpfully": "~0.0.1"
   }
 }

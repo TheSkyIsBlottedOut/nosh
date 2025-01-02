@@ -1,0 +1,12 @@
+{
+  "extends": "../../jsconfig.json",
+  "compilerOptions": {
+    "isolatedModules": false
+  },
+  "aliases": {
+    "@/*": ["./src/*"],
+    "$/*": ["./src/$/*"],
+    "public": ["./public/*"]
+  }
+}
+

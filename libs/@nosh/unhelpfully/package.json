@@ -1,8 +1,12 @@
 {
-  "name": "unhelpfully",
+  "name": "@nosh/unhelpfully",
   "description": "A toolkit of common utilities for javascript.",
   "main": "index.js",
   "type": "module",
-  "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" }
-
+  "engines": { "bun": ">=0.0.1", "node": ">=16.0.0" },
+  "dependencies": {
+    "@nosh/neoclassical": "~0.0.1",
+    "uuid": "^8.3.2"
+  },
+  "nohoist": ["@nosh/neoclassical"]
 }

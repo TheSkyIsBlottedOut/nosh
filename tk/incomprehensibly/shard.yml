@@ -1,0 +1,13 @@
+name: incomprehensibly
+version: 0.1.0
+
+authors:
+  - The Fall of Man <developer@iswork.in>
+
+targets:
+  incomprehensibly:
+    main: src/incomprehensibly.cr
+
+crystal: '>= 1.14.0'
+
+license: MIT

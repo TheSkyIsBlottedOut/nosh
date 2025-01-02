@@ -1,23 +1,24 @@
-import { NArray, enlist } from "./array";
-import { Integer, N, Float } from "./integer";
-import { NObject } from "./object";
-import { NString } from "./string";
-import { NDate } from "./date";
-export { Case } from './case'
+import { NeoCore } from "./src/core";
+import { NeoArray } from "./src/array";
+import { NeoString } from "./src/string"
+import { NeoNumber, InfinitePrecisionNumber } from "./src/number"
+import { NeoObject } from "./src/object"
+import { NeoDate } from "./src/date"
+import { NeoRange } from "./src/range"
+import { Case } from "./src/case"
+import { extendBaseClasses } from "./src/extender";
 
 
-export { NArray, Integer, N, Float, NObject, NString, NDate };
-
-export const evolve = (obj) => {
+const evolve = (obj) => {
   if (!obj) return obj
-  if (obj.nhanced) return obj;
-  if (typeof obj.nhanced) return obj;
-  if (Array.isArray(obj)) return enlist(obj)
-  if (typeof obj === "number") return N(obj)
-  if (typeof obj === "string") return new NString(obj)
-  if (obj instanceof Date) return new NDate(obj)
-  if (Object.isObject(obj)) return new NObject(obj)
+  if (obj.neo) return obj;
+  if (obj instanceof NeoCore) return obj
+  if (Array.isArray(obj)) return new NeoArray(obj)
+  if (typeof obj === "number") return new NeoNumber(obj)
+  if (typeof obj === "string") return new NeoString(obj)
+  if (obj instanceof Date) return new NeoDate(obj)
+  if (Object.isObject(obj)) return new NeoObject(obj)
 }
-
-
-
+export {
+  NeoCore, NeoArray, NeoString, NeoNumber, InfinitePrecisionNumber, NeoObject, NeoDate, NeoRange, Case, extendBaseClasses, evolve
+}

@@ -1,0 +1,13 @@
+{
+  "name": "incomprehensibly",
+  "version": "0.0.1",
+  "description": "Expands password entropy by creating acronyms from passwords in a (non-cryptographically secure) way. Used for nosh/graybin gpg key generation.",
+  "main": "incomprehensibly",
+  "author": {
+    "name": "The Fall of Man",
+    "email": "fall@vintagedogma.net"
+  },
+  "nosh": {
+    "sys:crystal": "build src/incomprehensibly.cr -o bin/incomprehensibly"
+  }
+}

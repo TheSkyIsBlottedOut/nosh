@@ -1,5 +1,5 @@
 {
-  "name": "logn",
+  "name": "@nosh/logn",
   "description": "nosh's logging system.",
   "main": "index.js",
   "type": "module",

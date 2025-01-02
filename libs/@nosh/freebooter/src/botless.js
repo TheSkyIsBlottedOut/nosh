@@ -1,4 +1,4 @@
-import { pragma } from './pragma.js'
+import { pragma } from './pragma'
 const botmatchers = new NObject({
   dont_be_google: /google|Ads/, // Googlebot
   microsoft_ip_thievery_engine: /bingbot/i, // Bingbot

@@ -4,10 +4,12 @@
     "**/.svn": false,
     "**/.hg": false,
     "**/CVS": false,
-    "**/.DS_Store": false,
+    "**/.DS_Store": true,
     "**/Thumbs.db": false,
     "**/local_secrets.*": false,
     "**/._*": false,
-    "**/freebooter": false
-  }
+    "**/node_modules": true,
+    "**/.nosh/etc/.*": false,
+  },
+  "editor.inlineCompletionsAccessibilityVerbose": true
 }

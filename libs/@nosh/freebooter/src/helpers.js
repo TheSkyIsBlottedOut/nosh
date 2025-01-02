@@ -136,7 +136,7 @@ const createHelpers = async (req) => {
   const retval = {
     body, req, req_with_body,
     _nosh: await findNoshBin(req),
-    nosh: async (cmd) => await $`${retval._nosh ?? 'nosh'} ${cmd}`.then(r => { return { text: r.text(), logout: r.stderr } }).catch(errors => ({errors})
+    nosh: async (cmd) => await $`${retval._nosh ?? 'nosh'} ${cmd}`.then(r => { return { text: r.text(), logout: r.stderr } }).catch(errors => ({errors})),
     identifiers: identify(req_with_body),
     multisource: O_O.fn.curry(multisource, req_with_body),
     log: pragma.logger.withRequest(req_with_body).withRequestId(idents.request),
@@ -173,10 +173,16 @@ const Pages = new Map()
 
 const handleFSRouterRequest = async (req, fsrouter) => {
   const helpers = await createHelpers(req)
-  const uri = req.
+  const uri = req.uri
   // auth states must be handled internally; we will just pass the helpers along
   if (!fsrouter.match(req)) return helpers.res.status(401).message('page.not.found').end
-  if Pages.get(
+  if (Pages.get(req.path)) {
+    return Pages.get(req.path)(req, helpers)
+  } else {
+    const page = await fsrouter.getPage(req)
+    Pages.set(req.path, page)
+    return page({ req, helpers, pragma })
+  }
 }
 
 export { handleApiRequest }
