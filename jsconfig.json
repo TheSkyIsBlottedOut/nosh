@@ -19,7 +19,7 @@
       "@libs/*": ["libs/*"],
       "@tk/*": ["tk/*"],
       "@data/*": ["data/*"],
-      "$g/*": ["apps/graybin/*"]
+      "$g/*": ["app/graybin/*"]
     }
   }
 }

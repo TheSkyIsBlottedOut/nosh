@@ -1,0 +1,18 @@
+{
+  "extends": "../../jsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "allowJsonOutput": true,
+    "allowArbitraryExtensions": true,
+    "include": ["./src/**/*", "./index.js"],
+    "exports": {
+      ".": {
+        "import": "./index.js",
+        "require": "./index.js"
+      },
+      "./src/*": "./src/*",
+      "./src/inc/*": "./src/inc/*"
+    }
+  },
+  "include": ["./src/**/*", "./index.js"]
+}

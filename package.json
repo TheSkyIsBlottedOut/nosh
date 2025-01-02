@@ -8,6 +8,10 @@
   "version": "0.0.2",
   "license": "SEE LICENSE IN LICENSE.md",
   "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "http://nosh.registry:4873"
+  },
   "bin": {
     "nosh": ".nosh/bin/nosh",
     "scrawl": ".nosh/bin/scrawl",
@@ -21,9 +25,7 @@
     "type": "git",
     "url": "keybase://team/fintechblackops/graybin"
   },
-  "workspaces": {
-    "packages": ["libs/*"]
-  },
+  "workspaces": [ "libs/**/*", "tk/**/*", "app/*" ],
   "devDependencies": {
     "bun": "^1.1.38",
     "react": "^19.0.0",
@@ -31,7 +33,7 @@
   },
   "scripts": {
     "scoped-init": "bun init --scope=@vintage-dogma",
-    "scoped-publish": "npm run publish -- --scope=@vintage-dogma",
+    "publish-nosh": "bun publish --scope=@nosh --registry=http://nosh.registry:4873",
     "start": "nosh launch graybin"
   },
   "dependencies": {

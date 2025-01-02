@@ -1,0 +1,17 @@
+[install]
+registry = "http://nosh.registry:4873"
+[install.scopes]
+"@nosh" = { token = "nosh", url = "https://localhost:4873/" }
+"@vintage-dogma" = { token = "dogmatic", url = "https://localhost:4873/" }
+
+[publish.scopes]
+"@nosh" = { token = "nosh", url = "https://localhost:4873/" }
+"@vintage-dogma" = { token = "dogmatic", url = "https://localhost:4873/" }
+
+[auth]
+{ "nosh": "nosh", "dogmatic": "dogmatic" }
+
+[scripts]
+preinstall = "nosh sanity:pm2"
+postinstall = "nosh sanity:bun"
+

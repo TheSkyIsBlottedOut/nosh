@@ -2,7 +2,6 @@
 import { Freebooter }  from './bootloader.js'
 import Bun, { $ } from 'bun'
 import { O_O } from 'unhelpfully'
-import { readdir } from 'node:fs/promises'
 import { handleApiRequest } from './helpers'
 class BunServer {
   constructor(config_path) { // relative to app dir!
@@ -44,16 +43,17 @@ class BunServer {
   }
 
   async start() {
-    await this.initServer()
-    await this.#server.start({ port: this.config.port })
-    pragma.logger.info(`Server started on port ${this.config.port}`)
+    await this.initServer(port = null)
+    port ??= this.config.port
+    await this.#server.start({ port })
+    pragma.logger.info(`Service application ${this.config.name} started on port ${port}`)
   }
 
   async initServer() {
     this.#server = Bun.serve({
       port: this.config.port,
       static: this.boot.router.static,
-      fetch: (req) => {
+      fetch:  async (req) => {
         const { pathname, searchParams } = new URL(req.url)
         // is this an FS route, or is it defined as an api route?
         const api_route = this.apiRouteFor(pathname)
@@ -68,3 +68,5 @@ class BunServer {
     })
   }
 }
+
+export { BunServer }

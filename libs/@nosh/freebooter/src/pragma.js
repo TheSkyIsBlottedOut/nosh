@@ -1,4 +1,4 @@
-import * as Neo from 'neoclassical'
+import Neo, { evolve } from 'neoclassical'
 import { Logger } from 'logn'
 import { O_O } from 'unhelpfully'
 import { promisify } from 'util'
@@ -9,7 +9,7 @@ const pragma = O_O.fn.obj
 pragma.O_O = O_O
 pragma.fn = O_O.fn
 pragma.Neo = Neo
-pragma.up = Neo.evolve
+pragma.up = evolve
 pragma.uuid = uuid
 pragma.promisify = promisify
 

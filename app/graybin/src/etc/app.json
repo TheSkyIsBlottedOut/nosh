@@ -1,0 +1,53 @@
+{
+  "name": "graybin",
+  "port": 7070,
+  "devmode": {
+    "ssl": {
+      "enabled": true,
+      "configuration": "nosh",
+      "useLocalhostCertInDevMode": true
+    }
+  },
+  "routes": {
+    "static": {
+      "paths": ["public"],
+      "options": { "maxAge": 0 }
+    },
+    "named": { "paths": ["api"] },
+    "views": "scenes"
+  },
+  "pageSettings": {
+    "robots": ["noindex", "nofollow", "norobots"],
+    "title": "Greybin - anonymous sharing",
+    "publicUrl": "/public",
+    "author": "Holistic Dogma",
+    "keywords": ["pastebin", "anonymous", "secure", "sharing"],
+    "description": "Secure anonymous pastes. No tracking, no ads, no unnecessary cookies.",
+    "themeColor": "#000000",
+    "noscriptMessage": "lol plz try again with js enabled"
+  },
+  "middleware": {
+    "antibot": {
+      "enabled": true,
+      "options": {
+        "whitelisted": ["curl", "node-fetch", "axios", "faraday", "httparty"],
+        "allowWithHeader": "X-Nosh-Graybin",
+        "denyBadActors": "always",
+        "behavior": "standard",
+        "description": "Standard middleware sends a random error code on route fetch."
+      }
+    },
+    "rateLimit": {
+      "enabled": true,
+      "options": {
+        "maxRequests": {
+          "daily": 10000,
+          "minute": 60,
+          "second": 10
+        },
+        "message": "You are going way too hard. Slow down.",
+        "statusCode": 420
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 import * as Neo from 'neoclassical'
-import { pragma } from 'pragma'
-import { readdir } from 'node:fs/promises'
+import { pragma } from './pragma'
+import { $ } from 'bun'
 
 /*
   Using the app's configuration, we need to initialize the Bun server for both
@@ -47,6 +47,14 @@ class Freebooter {
     this.router.pages ??= Bun.FileSystemRouter({ style: 'nextjs', dir: `${this.appRoot}/${this.config.routes.views}` })
   }
 
+  async readDir() {
+    const _cfgptr = this.config.routes.static.paths
+    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [ _cfgptr ]
+    const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
+    const _files = await Promise.all(_absdir.map(async dir => { return [dir, (await $`ls -l "${dir}.*s" | tr ' ' '\n'`.text()).split(/\n/)  ] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
+    return _files.flat()
+  }
+
   async staticRouting() {
     if (!this.config?.routes?.static?.paths) return []
     const _cfgptr = this.config.routes.static.paths
@@ -56,7 +64,8 @@ class Freebooter {
     const _flattened = _files.flat()
     this.logger.data({ _flattened }).info('static.files')
     this.router.static = _flattened.reduce((acc, file) => {
-      acc[file] = new Response(await Bun.file(file).read())
+      const responsevalue = await Bun.file(file).read()
+      acc[file] = new Response(responsevalue, { headers: { 'Content-Type': 'text/json' } })
       return acc
     }, {})
   }
@@ -74,15 +83,11 @@ class Freebooter {
 
   async namedRouting() {
     this.logger.log('info', 'boot.sequence.namedroutes.load.start')
-
-
     if (Array.isArray(this.router.defined)) return this.router.defined
     if (!this.config?.routes?.named?.paths) return []
     if (!Array.isArray(this.config?.routes?.named?.paths)) return []
     const rps = this.config.routes.named.paths.map(path => `${this.appRoot}/${path}`)
     const rs = rps.map(async (path) => { return await import(path).then(({ routes }) => routes) })
-
-
     this.router.defined = await Promise.allSettled(rs).then(r => this.seek(...r)).then(a => a.flat())
     this.router.defined.forEach(route => { const {path, method} = route; this.logger.data({path, method}).info('route.load') })
     return this.router.defined ?? []

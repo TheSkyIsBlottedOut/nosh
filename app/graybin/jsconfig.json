@@ -1,9 +1,12 @@
 {
   "extends": "../../jsconfig.json",
-  "buildOptions": {
-    "outDir": "../../public/graybin"
+  "compilerOptions": {
+    "isolatedModules": false
   },
   "aliases": {
-    "@/*": "./src/*",
+    "@/*": ["./src/*"],
+    "$/*": ["./src/$/*"],
+    "public": ["./public/*"]
   }
 }
+
