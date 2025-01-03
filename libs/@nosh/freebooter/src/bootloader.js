@@ -1,54 +1,119 @@
-import * as Neo from 'neoclassical'
+import X from 'neoclassical'
 import { pragma } from './pragma'
 import { $ } from 'bun'
+import { Logger } from 'logn'
+import Bun from 'bun'
+import Neo from 'neoclassical'
+O_O = pragma.O_O
+
+/* Unlike 'server', I think Freebooter does the dirty work of actually setting up the server:
+  - It loads the configuration
+  - It searches the filesystem for the app directory
+  - It sets up the filesystem routing for jsx pages
+  - It sets up the static routing for public files
+  - It sets up the named routes
+  - It sets up the API routes
+  - It sets up the server
+  - It starts the server
+  - It handles the request
+  - It handles the response (theoretically, it might farm it out to a responder)
+  - It handles the end state of the request
+  - It keeps a constant request id for the life of the request
+  - It leans heavily on JSX and not so much on react (the parts that break the MDN)
+  - It uses the Bun server to handle the request
+
+  BunServer, on the other hand, is an interface class for people who don't really need the guts of the service to show.
+  It's a wrapper around Freebooter that does the following:
+  - It loads the configuration
+  - It navigates to the app directory
+  - It preloads the service
+  - It creates a Freebooter instance
+  - It starts the server
+  */
 
 class Freebooter {
+  #config = O_O.obj
+  #logger = O_O.obj
+  #paths = O_O.obj
+  #routes = O_O.obj
+  #pragma = pragma
+
 
   constructor(config) {
-    this.config = config || {}
-    this.app = config.name ?? 'app'
-    this.logger = new Logger(this.app)
-    this.approot = null
-    this.router = { pages: null, static: null, defined: null }
+    this.#config = { ...config }
+    this.#logger = new Logger(this.app)
+    this.#paths = O_O.obj
+    this.#routes = O_O.obj
     this.pragma = pragma
     this.logger.config(this.config.logger || {})
     this.logger.info('boot.sequence.initiated')
   }
 
+  get appName() { return this.config.name ?? 'untitled-application' }
+
   async loadFSData() {
     this.logger.info('boot.sequence.fsdata.load.start')
-    this.repoRoot = process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
-    this.appRoot = `${this.repoRoot}/apps/${this.app}`
-    this.logger.log('info', 'boot.sequence.fsdata.load.end')
+    const most_likely_root_paths = [
+      Bun.env.DIRENV_DIR,
+      Bun.env.Nosh_LogDir?.replace(/\/logs$/, ''),
+      Bun.env.Nosh_Dir?.replace(/\.nosh$/, ''),
+      () => import.meta.dir.split(/\@nosh/)[0]?.replace(/[^\/]+\/?$/, '')
+      (async () => { return (await $`git rev-parse --show-toplevel`).text().trim() })
+    ]
+    const testcase = import.meta.dir
+    this.#paths.repo = most_likely_root_paths.find((pathOrFn) => {
+      const test_path = typeof pathOrFn === 'function' ? await pathOrFn() : pathOrFn
+      if (typeof test_path === 'string' && test_path.length > 4 && testcase.startsWith(test_path)) return test_path
+    })
+    this.#paths.repo ??= await $`cd ${import.meta.dir} && while [[ ! -d .nosh ]]; do cd ..; done && pwd`.text().trim()
+    this.#paths.app = [this.#paths.repo, 'app', this.appName].join('/')
+    // note this finds the *non dist* app directory. Modify this if we standardize build.
+    if (await $`[[ ! -d ${this.#paths.app} ]] && echo 'found'`.text() !== 'found') {
+      this.logger.data({ paths: this.#paths }).error('boot.sequence.fsdata.app.not.found')
+      exit(1)
+    }
+    this.logger.info('boot.sequence.fsdata.load.success')
   }
 
-  pageRouting() {
-    // this is where we'll set up the filesystem routing for jsx pages
-    if (!this.config?.routes?.views) return
-    this.router.pages ??= Bun.FileSystemRouter({ style: 'nextjs', dir: `${this.appRoot}/${this.config.routes.views}` })
+  appPathFor(...ptrkeys) {
+    // returns one or more paths based on the app's configuration
+    const path_values = ptrkeys.reduce((acc, key) => acc[key] ?? Object.create(null), this.#config.routes)
+    if (path_values.length === 0) return null
+    const app_prefix = this.pathToApp + `/${this.#config.routes.prefix ?? ''}`
+    const paths = (Array.isArray(path_values)) ? path_values : [path_values]
+    return paths.map(path => [app_prefix, path].join('').replaceAll(/\/+/g, '/'))
   }
 
-  async readDir() {
-    const _cfgptr = this.config.routes.static.paths
-    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [_cfgptr]
+  pageRouting() { // JSX view paths ('pages routing')
+    const dir = this.appPathFor('views')?.shift()
+    // potential enhancement: allow for multiple view directories
+    this.#routes.pages = (pages.length > 0) ? Bun.FileSystemRouter({ style: 'nextjs', dir }) : undefined
+  }
+
+  async dirExists(dir) {
+    return (await $`[[ -d ${dir} ]] && echo 'exists'`.text()) === 'exists'
+  }
+
+  async fileExists(file) {
+    return (await $`[[ -f ${file} ]] && echo 'exists'`.text()) === 'exists'
+  }
+
+  async allFilesInPath(dir) {
+    if (!await this.dirExists(dir)) return []
+    return (await $`find ${dir} -type f`.text()).split(/\n/)
+  }
+
+  async staticFiles(dir) {
+    const _ptrlst = new pragma.NeoArray(this.appPathFor('static', 'paths'))
+    if (_ptrlst.length === 0) return []
     const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
-    const _files = await Promise.all(_absdir.map(async dir => { return [dir, (await $`ls -l "${dir}.*s" | tr ' ' '\n'`.text()).split(/\n/)] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
-    return _files.flat()
+    return await Promise.allSettled(_absdir.map(async dir => await this.allFilesInPath(dir))).catch(e => []).then(...files => new pragma.NeoArray(files).flatten.compact.map(f => `${this.#routes.appRoot}/${f}`))
   }
 
   async staticRouting() {
-    if (!this.config?.routes?.static?.paths) return []
-    const _cfgptr = this.config.routes.static.paths
-    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [_cfgptr]
-    const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
-    const _files = await Promise.all(_absdir.map(async dir => { return [dir, await readdir(dir)] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
-    const _flattened = _files.flat()
-    this.logger.data({ _flattened }).info('static.files')
-    this.router.static = _flattened.reduce(async (acc, file) => {
-      const responsevalue = await Bun.file(file).read()
-      acc[file] = new Response(responsevalue, { headers: { 'Content-Type': 'text/json' } })
-      return acc
-    }, {})
+    const _flattened = await this.staticFiles()
+    this.#logger.data({ static: _flattened.values }).info('static.files')
+    this.#routes.static = _flattened.reduce(async (acc, file) => new Response(await Bun.file(file).read()).then((response) => { acc[file] = response; return acc }), {})
   }
 
   // named routes are configured app-relative dynamic includes which return the following
@@ -62,19 +127,24 @@ class Freebooter {
   // bots: (defaults to false; whether or not this route allows bots);
   // cors: (defaults to false; whether or not this route allows cross-origin requests);
 
-  async namedRouting() {
-    this.logger.log('info', 'boot.sequence.namedroutes.load.start')
-    if (Array.isArray(this.router.defined)) return this.router.defined
-    if (!this.config?.routes?.named?.paths) return []
-    if (!Array.isArray(this.config?.routes?.named?.paths)) return []
-    const rps = this.config.routes.named.paths.map(path => `${this.appRoot}/${path}`)
-    const rs = rps.map(async (path) => { return await import(path).then(({ routes }) => routes) })
-    this.router.defined = await Promise.allSettled(rs).then(r => this.seek(...r)).then(a => a.flat())
-    this.router.defined.forEach(route => { const { path, method } = route; this.logger.data({ path, method }).info('route.load') })
-    return this.router.defined ?? []
+  async loadNamedRoutes() {
+    const _namedroutes = await this.appPathFor('routes', 'named')
+    const _this = this
+    const _neoroutes = new pragma.NeoArray(_namedroutes).compact.reject((path) => _this.fileExists(path))
+    if (_neoroutes.length === 0) return []
+    const _routes = _neoroutes.map(async (path) => await import(path).then(({ routes }) => routes))
+    return await Promise.allSettled(_routes).then((results) => results.map((r) => r.value)).catch(e => [])
   }
 
-  seek(...target) {
+  get routes { return this.#routes }
+
+  async namedRouting() {
+    this.logger.log('info', 'boot.sequence.namedroutes.load.start')
+    this.#routes.defined = await this.loadNamedRoutes()
+    this.logger.log('info', 'boot.sequence.namedroutes.load.end')
+  }
+
+  seek(...target) { // dunno if this is used elsewhere, law of demeter says kill
     const results = []
     target.map((t) => {
       if (Array.isArray(t)) return this.seek(...t)
@@ -87,10 +157,12 @@ class Freebooter {
 
   async loadAllRoutes() {
     this.logger.log('info', 'boot.sequence.routes.load.start')
-    this.pageRouting()
-    this.staticRouting()
-    await this.namedRouting()
-    this.logger.log('info', 'boot.sequence.routes.load.end')
+    const _this = this
+    Promise.allSettled([
+      await this.pageRouting(),
+      await this.staticRouting(),
+      await this.namedRouting()
+    ]).then(() => _this.logger.log('info', 'boot.sequence.routes.load.end'))
   }
 }
 

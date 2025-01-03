@@ -9,6 +9,7 @@
     }
   },
   "routes": {
+    "prefix": "src",
     "static": {
       "paths": ["public"],
       "options": { "maxAge": 0 }

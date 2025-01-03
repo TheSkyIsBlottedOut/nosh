@@ -94,6 +94,10 @@ class NeoArray extends NeoCore {
   get length() { return this.array.length }
   get first() { return this.array[0] }
   filter(fn) { return this.array.filter(fn) }
+  select(fn) { return this.filter(fn) }
+  findFirst(fnOrObj) { return this.array.find(fnOrObj) }
+  findLast(fnOrObj) { return this.array.reverse().find(fnOrObj) }
+  find(fnOrObj) { return this.array.select(x => typeof fnOrObj === 'function' ? !!fnOrObj(x) : x === fnOrObj) }
   map(fn) { return this.array.map(fn) }
   push(...values) { this.array.push(...(this.defaultTransform(values))) }
   concat(...values) { return this.array.concat(...this.defaultTransform(values)) }
@@ -109,8 +113,6 @@ class NeoArray extends NeoCore {
   includes(...values) { return values.every(v => this.array.includes(v)) }
   indexOf(value) { return this.array.indexOf(value) }
   indicesOf(value) { return this.array.reduce((acc, v, i) => v === value ? [...acc, i] : acc, []) }
-  find(fn) { return this.array.find(fn) }
-  findIndex(fn) { return this.array.findIndex(fn) }
   get uniq() { return [...new Set(this.array)] }
   get unique() { return this.uniq }
   get compact() { return this.array.filter(i => i) }
