@@ -1,5 +1,5 @@
 {
-  "name": "@nosh/freebooter",
+  "name": "freebooter",
   "description": "A bun.sh bootloader with bot matching and parameter validation.",
   "main": "index.js",
   "type": "module",
@@ -11,10 +11,8 @@
     "bun": ">=1.1.38", "node": ">=16.0.0"
   },
   "dependencies": {
-    "util": "^0.12.0",
-    "uuid": "^8.3.2",
-    "@nosh/unhelpfully": "~0.0.1",
-    "@nosh/neoclassical": "~0.0.1",
-    "@nosh/logn": "~0.0.1"
+    "neoclassical": "workspace:libs/@nosh/neoclassical@*",
+    "unhelpfully": "workspace:libs/@nosh/unhelpfully@*",
+    "logn": "workspace:libs/@nosh/logn@*"
   }
 }

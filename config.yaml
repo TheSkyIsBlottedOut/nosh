@@ -1,0 +1,26 @@
+---
+storage: ./node/usr/.verdaccio
+auth:
+  htpasswd:
+    file: ./node/usr/.verdaccio/htpasswd
+    encryption: bcrypt
+    rounds: 13
+middlewares:
+  audit:
+    enabled: false
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+packages:
+  '@nosh/*':
+    access: $anonymous
+    publish: $authenticated
+    maxusers: 10
+  '@vintage-dogma/*':
+    access: $all
+    publish: $authenticated
+    maxusers: 100
+  '**':
+    access: $all
+    publish: $authenticated
+    proxy: npmjs

@@ -1,9 +1,17 @@
 {
-  "name": "@nosh/logn",
+  "name": "logn",
   "description": "nosh's logging system.",
   "main": "index.js",
   "type": "module",
   "private": false,
   "keywords": ["logging", "nosh", "bun"],
-  "version": "0.0.1"
+  "version": "0.0.1",
+  "license": "inherit",
+  "engines": {
+    "bun": ">=1.1.38", "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "bun": "^1.1.38"
+  }
+
 }

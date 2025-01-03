@@ -1,18 +1,20 @@
 {
-  "extends": "../../jsconfig.json",
+  "extends": "../../../jsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "allowJsonOutput": true,
     "allowArbitraryExtensions": true,
-    "include": ["./src/**/*", "./index.js"],
-    "exports": {
-      ".": {
-        "import": "./index.js",
-        "require": "./index.js"
-      },
-      "./src/*": "./src/*",
-      "./src/inc/*": "./src/inc/*"
-    }
+    "allowJs": true,
+    "target": "ES2018",
+    "module": "NodeNext",
+    "outDir": "../../../dist/@nosh/neoclassical"
   },
-  "include": ["./src/**/*", "./index.js"]
+  "include": ["./src/**/*.{js|json}", "./index.js"],
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.js"
+    },
+    "./src/*": "./src/*",
+    "./src/inc/*": "./src/inc/*"
+  }
 }

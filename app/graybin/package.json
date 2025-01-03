@@ -1,0 +1,15 @@
+{
+  "name": "graybin-webapp",
+  "description": "The graybin web application.",
+  "main": "launch.js",
+  "type": "module",
+  "private": true,
+  "keywords": ["bun", "pastebin", "nosh"],
+  "version": "0.0.1",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "http://nosh.registry:4873"
+  }
+}

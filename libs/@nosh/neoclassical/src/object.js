@@ -4,6 +4,7 @@ import { NeoArray } from "./array.js";
 class NeoObject extends NeoCore {
   #value = Object.create(null);
   constructor(arg = undefined) {
+    super(arg);
     this.#value = this.#objectify(arg);
   }
 
@@ -17,13 +18,13 @@ class NeoObject extends NeoCore {
     return Object.create({});
   }
   get keys() { return Object.keys(this.#value) }
-  get valeus() { return Object.values(this.#value) }
+  get values() { return Object.values(this.#value) }
   get entries() { this.keys.map((k) => [k, this.#value[k]]) }
   get length() { return this.keys.length }
-  get filter(fn) { return this.select(fn) }
-  get select(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !!fn(k, v))) }
-  get reject(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !fn(k, v))) }
-  get compact(fn) { return this.reject((k, v) => !v) }
+  filter(fn) { return this.select(fn) }
+  select(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !!fn(k, v))) }
+  reject(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !fn(k, v))) }
+  get compact() { return this.reject((k, v) => !v) }
   get inverse() { return new NeoObject.fromEntries(this.entries.map(([k, v]) => [v, k])) }
   get random() { return new NeoArray.from(this.entries).random }
   get ancestors() {
@@ -101,7 +102,7 @@ class NeoObject extends NeoCore {
         this.merge(obj);
       } else {
         ctr = 0
-        const entr = obj.reduce((s,i) => s.concat( [0+ctr, i] ).concat( [0-ctr++, i] ), [])
+        const entr = obj.reduce((s, i) => s.concat([0 + ctr, i]).concat([0 - ctr++, i]), [])
         this.merge(Object.fromEntries(entr))
       }
     } else {

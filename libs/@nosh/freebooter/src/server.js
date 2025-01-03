@@ -1,20 +1,24 @@
 /* Use this as your Bun.serve args */
-import { Freebooter }  from './bootloader.js'
+import { Freebooter } from './bootloader.js'
 import Bun, { $ } from 'bun'
 import { O_O } from 'unhelpfully'
 import { handleApiRequest } from './helpers'
 class BunServer {
+  paths = O_O.obj
+  config = O_O.obj
+  boot = O_O.obj
+  #server = () => { }
   constructor(config_path) { // relative to app dir!
     this.paths = O_O.obj
     this.paths.config = /^\//.test(config_path) ? config_path : $.path(`${this.boot.appRoot}/${config_path}`)
-    (/^(\/.*?)\/([^\/]+)\/app\/([^\/]+)/i).test(this.paths.config)
+      (/^(\/.*?)\/([^\/]+)\/app\/([^\/]+)/i).test(this.paths.config)
     this.paths.parent = $1
     this.paths.repo = $2
     this.paths.appname = $3
   }
 
-  get pathToRepo(){ return [this.paths.parent, this.paths.repo].join('/') }
-  get pathToApp(){ return [this.paths.parent, this.paths.repo, 'app', this.paths.appname].join('/') }
+  get pathToRepo() { return [this.paths.parent, this.paths.repo].join('/') }
+  get pathToApp() { return [this.paths.parent, this.paths.repo, 'app', this.paths.appname].join('/') }
 
 
   async loadConfig() { this.config = await import(this.paths.config, { type: 'json' }).then(({ default: config }) => config) }
@@ -53,7 +57,7 @@ class BunServer {
     this.#server = Bun.serve({
       port: this.config.port,
       static: this.boot.router.static,
-      fetch:  async (req) => {
+      fetch: async (req) => {
         const { pathname, searchParams } = new URL(req.url)
         // is this an FS route, or is it defined as an api route?
         const api_route = this.apiRouteFor(pathname)

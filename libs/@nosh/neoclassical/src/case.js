@@ -1,5 +1,5 @@
 // string case switcher
-import { O_O } from '@nosh/unhelpfully'
+import { O_O } from 'unhelpfully'
 import { NeoString } from './string.js'
 
 const Case = O_O.fn.obj
@@ -66,10 +66,10 @@ const discoverCase = (str) => {
 Case._convert = convertCase
 Case.convert = (str) => ({ to: O_O.fn.curry(convertCase, str, discoverCase(str)) })
 Case.types.forEach(type => {
-  O_O.add(type).to(Case).value({ to: O_O.obj })
-  Case.types.forEach(resval => {
-    O_O.add(resval).to(Case[type].to).value((str) => convertCase(str, type, resval))
+  O_O.add(type).to(Case).value({
+    to: {...Case.types.reduce((acc, cur) => { acc[cur] = O_O.fn.curry(convertCase, type, cur); return acc }, {}) }
   })
 })
+
 // yes you can kebab.to.kebab
 export { Case }

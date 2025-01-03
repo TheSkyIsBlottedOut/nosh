@@ -6,7 +6,8 @@ class NeoRange extends NeoCore {
   #current = 0
   #triggers = {}
   #done = false
-  constructor(start, end, step=1) {
+  constructor(start, end, step = 1) {
+    super(start);
     this.#start = start
     this.#end = end
     this.#step = step

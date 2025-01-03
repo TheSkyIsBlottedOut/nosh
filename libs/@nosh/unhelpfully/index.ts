@@ -1,18 +1,19 @@
-const _ = (x=null) => Object.create(x);
-const O_O = _({O: 0})
+const _ = (x:null|object=null) => Object.create(x);
+const O_O = _({});
 O_O.fn = _(); O_O.fn.curry = (fn, ...a) => (...b) => fn(...a, ...b)
 O_O.fn.toFn = (fo) => (typeof fo === 'function' && fo.length === 0) ? fo : () => fo;
 O_O.fn.def = O_O.fn.curry(Object.defineProperty)
 
-O_O.add = (key) => ({ to: (obj) => {
+O_O.add = (key) =>{ return { to: (obj) => {
   const pp = O_O.fn.curry(O_O.fn.def, obj, key);
   return {
     get: (fn) => pp({ get: O_O.fn.toFn(fn) }),
-    var: (fn) => pp({ set: (val) => obj[`_${key}`] = val, get: () => obj[`_${key}`] }),
+    set: () => pp({ set: (val) => obj[`_${key}`] = val, get: () => obj[`_${key}`] }),
     method: (fn) => pp({ get: O_O.fn.toFn(fn) }),
     value: (val) => O_O._.prop(obj, key, { value: val })
-
-}}})
+  }
+}
+}}
 O_O.add('obj').to(O_O.fn).method((x=null) => Object.create(x))
 O_O.add('obj').to(O_O).get(()=>Object.create(null))
 O_O.fn.ext = ((key, fn) => O_O.add(key).to(O_O.fn).method(fn))
@@ -26,7 +27,7 @@ O_O.fn.json = (_) => typeof _ === 'string' ? JSON.parse(_) : JSON.stringify(_)
 O_O.fn.interpolate = (str) => (obj) => { str.replace(/:(\w+)/g, (_, key) => obj[key] ?? '') }
 
 O_O.ancestorsOf = (obj = {}) => {
-  const anc = [];
+  const anc:unknown[] = [];
   let proto = obj;
   while (proto) anc.push(proto);
   proto = O_O._.proto(proto);
@@ -84,7 +85,37 @@ O_O.type = (x) => {
   return r
 }
 
-O_O._.matchers = {
+O_O.ObjWithDefault = class extends Object {
+  constructor(obj) { super(obj) }
+  #default = ((obj) => Array.isArray(obj) ? obj : [obj])
+  set default(fnOrObj) { this.#default = fnOrObj }
+  use(key, val=null) {
+    const pp = O_O.fn.curry(Object.defineProperty, this, key)
+    pp({ value: val ?? this.#default })
+  }
+}
+
+O_O._ = new O_O.ObjWithDefault({})
+O_O._.default = (cval) => O_O.fn.curry(cval)
+O_O._.use('proto', Object.getPrototypeOf)
+O_O._.use('props', Object.getOwnPropertyNames)
+O_O._.use('prop', Object.getOwnPropertyDescriptor)
+O_O._.use('keys', Object.keys)
+O_O._.use('values', Object.values)
+O_O._.use('entries', Object.entries)
+O_O._.use('zip', Object.fromEntries)
+O_O._.use('assign', Object.assign)
+O_O._.use('define', Object.defineProperty)
+O_O._.use('defineMany', Object.defineProperties)
+O_O._.use('create', Object.create)
+O_O._.use('freeze', Object.freeze)
+O_O._.use('seal', Object.seal)
+O_O._.use('noext', Object.preventExtensions)
+O_O._.use('frozen', Object.isFrozen)
+O_O._.use('sealed', Object.isSealed)
+O_O._.use('extensible', Object.isExtensible)
+
+O_O.matchers = {
   uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
   email: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
   url: /^(http|https):\/\/[a-z0-9.-]+\.[a-z]{2,}$/,
@@ -110,41 +141,8 @@ O_O._.matchers = {
   hexcolorshortalpha: /^#[0-9a-f]{4}$/,
   linguistics: /^(([aeiou]?)([^aeiou]*)([aeiou])([^aeiou]?)+\W{0,12})+|nth$/,
 }
-O_O.fn.matchStringType = (str) => (key) => O_O._.matchers[key].test(str)
-// O_O.fn.matchStringType('rgb(255,255,255)')('rgb')
-
-O_O.ObjWithDefault = class extends Object {
-  #default = ((obj) => Array.isArray(obj) ? obj : [obj])
-  constructor(obj) {
-    super(obj)
-  }
-  set default(fnOrObj) { this.#default = fnOrObj }
-  use(key, val=null) {
-    O_O.add(key).to(this).set((val) => this[`#_${key}`] (typeof this.#default === 'function') ? this.#default(val) : val ?? this.#default)
-    O_O.add(key).to(this).get(() => this[`#_${key}`])
-  }
-}
-
-O_O._ = new O_O.ObjWithDefault({})
-O_O._.default = (cval) => O_O.fn.curry(cval)
-O_O._.use('proto', Object.getPrototypeOf)
-O_O._.use('props', Object.getOwnPropertyNames)
-O_O._.use('prop', Object.getOwnPropertyDescriptor)
-O_O._.use('keys', Object.keys)
-O_O._.use('values', Object.values)
-O_O._.use('entries', Object.entries)
-O_O._.use('zip', Object.fromEntries)
-O_O._.use('assign', Object.assign)
-O_O._.use('define', Object.defineProperty)
-O_O._.use('defineMany', Object.defineProperties)
-O_O._.use('create', Object.create)
-O_O._.use('freeze', Object.freeze)
-O_O._.use('seal', Object.seal)
-O_O._.use('noext', Object.preventExtensions)
-O_O._.use('frozen', Object.isFrozen)
-O_O._.use('sealed', Object.isSealed)
-O_O._.use('extensible', Object.isExtensible)
-
+O_O.fn.matchStringType = (str) => (key) => O_O.matchers[key].test(str)
+// O_O.fn.matchStringType('rgb(55,155,255)')('rgb')
 
 
 O_O.fn.intRoot = (n) => {
@@ -160,7 +158,7 @@ O_O.fn.intRoot = (n) => {
   return l
 }
 
-O_O.primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+O_O.primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] as number[]
 O_O.fn.nextPrime = () => {
   let p = O_O.primes[O_O.primes.length - 1] + 2
   while (O_O.primes.some((prime) => p % prime === 0)) p += 2
@@ -170,9 +168,9 @@ O_O.fn.nextPrime = () => {
 O_O.fn.primeFactors = (n) => {
   let num = Math.abs(Math.floor(n))
   if ([0,1].includes(num)) return [num]
-  const factors = []
+  const factors: number[] = []
   while ((num / 2) > O_O.primes[O_O.primes.length - 1]) O_O.fn.nextPrime()
-  O_O.primes.forEach((prime) => {
+  O_O.primes.forEach((prime: number) => {
     while (num % prime === 0) {
       factors.push(prime)
       num /= prime

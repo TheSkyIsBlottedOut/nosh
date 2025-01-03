@@ -1,5 +1,6 @@
 import { pragma } from './pragma'
-const botmatchers = new NObject({
+
+const botmatchers = new pragma.NeoObject({
   dont_be_google: /google|Ads/, // Googlebot
   microsoft_ip_thievery_engine: /bingbot/i, // Bingbot
   openweb_fuckers: /OpenWeb/i, // OpenWeb
@@ -50,7 +51,7 @@ const botmatchers = new NObject({
 })
 
 
-const suspect_uris = new NObject({
+const suspect_uris = new pragma.NeoObject({
   envfile_varset_thieves: /\.env\w*$/,
   zoo_escape_attempt: /\/?(\.{2}\/)+/, // index.php?lang=../../..
   php_autoprepend_fuckery: /auto_prepend_file.*php.+input/,
@@ -72,7 +73,7 @@ const suspect_uris = new NObject({
 });
 
 
-const error_code_pairs = new NObject({
+const error_code_pairs = new pragma.NeoObject({
   payment_required: 402,
   slow_the_fuck_down: 420,
   back_to_the_shortbus: 406,
@@ -99,7 +100,7 @@ const unsafeRequestProbability = (req) => {
   const uri = enlist(req.protocol, "://", req.get("host"), req.originalUrl).join;
   const suspicious = enlist(suspect_uris.filter((k, v) => v.test(uri)).keys);
   // one match is suspicious, more is very suspect_uris
-  return new Float(suspicious.length ** 2).sigmoid;
+  return new pragma.NeoNumber(suspicious.length ** 2).sigmoid;
 };
 
 const blockUnsafe = (req) => {
@@ -107,8 +108,7 @@ const blockUnsafe = (req) => {
 }
 
 const randomErrorStatus = () => {
-  const errorkeys = new NArray(Object.keys(error_code_pairs));
-  const key = errorkeys.random;
+  const key = error_code_pairs.keys.random
   return { code: error_code_pairs[key], type: key };
 };
 

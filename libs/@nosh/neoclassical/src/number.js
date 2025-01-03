@@ -1,18 +1,23 @@
 import { NeoCore } from './core.js'
 import { NeoRange } from './range.js'
-
+import { NeoArray } from './array.js'
+import { O_O } from 'unhelpfully'
 
 
 const Roman = 'IVXLCDMↁↂↇↈ'
 class NeoNumber extends NeoCore {
   #value = 0
   #pragma = O_O
-  constructor(num) { this.#value = num }
+  constructor(num) {
+    super(num); this.#value = num; this.#pragma = O_O
+  }
+
   toString() { return this.value.toString() }
   valueOf() { return this.value }
 
   #N(num) { return new NeoNumber(num) }
   #NR(...args) { return new NeoRange(...args) }
+  #NA(...args) { return new NeoArray(...args) }
   get even() { return this.value % 2 === 0 }
   get value() { return this.#value }
   get odd() { return this.value % 2 === 1 }
@@ -22,7 +27,7 @@ class NeoNumber extends NeoCore {
   get bytes() {
     // break into 8-bit chunks
     const retval = []
-    const dup = this.#value
+    let dup = this.#value
     while (dup > 0) {
       retval.unshift(dup & 0xFF)
       dup >>= 8
@@ -67,8 +72,8 @@ class NeoNumber extends NeoCore {
   upto(num) { return this.#NR(this.value, num, 1) }
   downto(num) { return this.#NR(this.value, num, -1) }
   coerce(other) { if ([typeof this.value, typeof other].includes('bigint')) return [BigInt(this.value), BigInt(other)]; return [Number(this.value), Number(other)] }
-  min(other) { return this.#N( this.#value > other ? other : this.#value ) }
-  max(other) { return this.#N( this.#value < other ? other : this.#value ) }
+  min(other) { return this.#N(this.#value > other ? other : this.#value) }
+  max(other) { return this.#N(this.#value < other ? other : this.#value) }
   toPrecision(p) { return this.#value.toPrecision(p) }
   upto(num) { return new NeoRange(this.value, num) }
   downto(num) { return new NeoRange(num, this.value) }
@@ -85,13 +90,11 @@ class NeoNumber extends NeoCore {
     }
     return result;
   }
-  #N(num) { return new NeoNumber(num) }
   get hex() { return this.#N(this.radix(16)) }
   get binary() { return this.#N(this.radix(2)) }
   get octal() { return this.#N(this.radix(8)) }
   get decimal() { return this.#N(this.radix(10)) }
   get char() { return String.fromCharCode(this.value) }
-
   get log2() { return this.#N(eMath.log2(this.value)) }
   get octal() { return this.#N(Math.octal(this.value)) }
   get log1p() { return this.#N(Math.log1p(this.value)) }
@@ -104,8 +107,8 @@ class NeoNumber extends NeoCore {
     let nsize = this.log10.ceil
     let out = ''
     for (let i = nsize; i >= 0; i--) {
-      let mid = pow*2, current = n / (10 ** i), mods = current % 5, c9 = current == 9,
-      n = n % (10 ** i)
+      let mid = pow * 2, current = n / (10 ** i), mods = current % 5, c9 = current == 9,
+        n = n % (10 ** i)
       out += [((mods == 4) ? Roman.charAt(mid) : ''), ((current > 3) ? Roman.charAt(mid + (c9 ? 2 : 1)) : ''), Roman.charAt(mid + 1).repeat(mods)].join('')
     }
     return out
@@ -122,7 +125,7 @@ class NeoNumber extends NeoCore {
   get fromNow() { return new Date(Date.now() + this.value) }
   get ago() { return new Date(Date.now() - this.value) }
   get at() { return new Date(this.value) }
-  mod(num) { let [v, num] = this.coerce(num); while (v > num) v -= num; return this.#N(v) }
+  mod(num) { let [v, num2] = this.coerce(num); while (v > num2) v -= num2; return this.#N(v) }
 
   times(fn) {
     if (typeof fn !== 'function') return

@@ -25,15 +25,13 @@
     "type": "git",
     "url": "keybase://team/fintechblackops/graybin"
   },
-  "workspaces": [ "libs/**/*", "tk/**/*", "app/*" ],
+  "workspaces": [ "libs/**/*" ],
   "devDependencies": {
     "bun": "^1.1.38",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "scripts": {
-    "scoped-init": "bun init --scope=@vintage-dogma",
-    "publish-nosh": "bun publish --scope=@nosh --registry=http://nosh.registry:4873",
     "start": "nosh launch graybin"
   },
   "dependencies": {

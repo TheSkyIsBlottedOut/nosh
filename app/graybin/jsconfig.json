@@ -1,5 +1,5 @@
 {
-  "extends": "../../jsconfig.json",
+  "extends": "../../jsconfig.base.json",
   "compilerOptions": {
     "isolatedModules": false
   },

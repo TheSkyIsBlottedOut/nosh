@@ -2,25 +2,6 @@ import * as Neo from 'neoclassical'
 import { pragma } from './pragma'
 import { $ } from 'bun'
 
-/*
-  Using the app's configuration, we need to initialize the Bun server for both
-  app and api endpoints. Steps required:
-    1. Ensure middleware is loaded:
-      - bot blockers
-      - request parsers
-      - request multisourcing
-      - preflights (request validators)
-      - authentication
-      - per-request helpers
-      - API: response promise awaiters, response formatters, response helpers
-      - Filesystem routing for jsx pages
-      - Static routing for public files
-      - Initialize react/jsx requests
-      - Handle request end state
-      - Keep a constant request id for the life of the request
-      - Ideally, lean heavily on JSX and not so much on react (the parts that break the MDN)
-*/
-
 class Freebooter {
 
   constructor(config) {
@@ -49,21 +30,21 @@ class Freebooter {
 
   async readDir() {
     const _cfgptr = this.config.routes.static.paths
-    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [ _cfgptr ]
+    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [_cfgptr]
     const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
-    const _files = await Promise.all(_absdir.map(async dir => { return [dir, (await $`ls -l "${dir}.*s" | tr ' ' '\n'`.text()).split(/\n/)  ] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
+    const _files = await Promise.all(_absdir.map(async dir => { return [dir, (await $`ls -l "${dir}.*s" | tr ' ' '\n'`.text()).split(/\n/)] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
     return _files.flat()
   }
 
   async staticRouting() {
     if (!this.config?.routes?.static?.paths) return []
     const _cfgptr = this.config.routes.static.paths
-    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [ _cfgptr ]
+    const _ptrlst = isArray(_cfgptr) ? _cfgptr : [_cfgptr]
     const _absdir = _ptrlst.map(ptr => `${this.appRoot}/${ptr}`)
     const _files = await Promise.all(_absdir.map(async dir => { return [dir, await readdir(dir)] }).then(async ([dir, files]) => { return files.map(file => `${dir}/${file}`) }))
     const _flattened = _files.flat()
     this.logger.data({ _flattened }).info('static.files')
-    this.router.static = _flattened.reduce((acc, file) => {
+    this.router.static = _flattened.reduce(async (acc, file) => {
       const responsevalue = await Bun.file(file).read()
       acc[file] = new Response(responsevalue, { headers: { 'Content-Type': 'text/json' } })
       return acc
@@ -89,7 +70,7 @@ class Freebooter {
     const rps = this.config.routes.named.paths.map(path => `${this.appRoot}/${path}`)
     const rs = rps.map(async (path) => { return await import(path).then(({ routes }) => routes) })
     this.router.defined = await Promise.allSettled(rs).then(r => this.seek(...r)).then(a => a.flat())
-    this.router.defined.forEach(route => { const {path, method} = route; this.logger.data({path, method}).info('route.load') })
+    this.router.defined.forEach(route => { const { path, method } = route; this.logger.data({ path, method }).info('route.load') })
     return this.router.defined ?? []
   }
 
@@ -114,3 +95,24 @@ class Freebooter {
 }
 
 export { Freebooter }
+
+
+
+/*
+  Using the app's configuration, we need to initialize the Bun server for both
+  app and api endpoints. Steps required:
+    1. Ensure middleware is loaded:
+      - bot blockers
+      - request parsers
+      - request multisourcing
+      - preflights (request validators)
+      - authentication
+      - per-request helpers
+      - API: response promise awaiters, response formatters, response helpers
+      - Filesystem routing for jsx pages
+      - Static routing for public files
+      - Initialize react/jsx requests
+      - Handle request end state
+      - Keep a constant request id for the life of the request
+      - Ideally, lean heavily on JSX and not so much on react (the parts that break the MDN)
+*/

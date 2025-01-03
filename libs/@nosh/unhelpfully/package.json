@@ -1,12 +1,13 @@
 {
-  "name": "@nosh/unhelpfully",
+  "name": "unhelpfully",
   "description": "A toolkit of common utilities for javascript.",
   "main": "index.js",
+  "version": "0.0.2",
   "type": "module",
   "engines": { "bun": ">=0.0.1", "node": ">=16.0.0" },
   "dependencies": {
-    "@nosh/neoclassical": "~0.0.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "neoclassical": "workspace:libs/@nosh/neoclassical@*"
   },
   "nohoist": ["@nosh/neoclassical"]
 }

@@ -19,6 +19,6 @@ const evolve = (obj) => {
   if (obj instanceof Date) return new NeoDate(obj)
   if (Object.isObject(obj)) return new NeoObject(obj)
 }
-export {
-  NeoCore, NeoArray, NeoString, NeoNumber, InfinitePrecisionNumber, NeoObject, NeoDate, NeoRange, Case, extendBaseClasses, evolve
-}
+const Neo = { NeoCore, NeoArray, NeoString, NeoNumber, InfinitePrecisionNumber, NeoObject, NeoDate, NeoRange, Case, extendBaseClasses, evolve }
+export default Neo
+export { NeoCore, NeoArray, NeoString, NeoNumber, InfinitePrecisionNumber, NeoObject, NeoDate, NeoRange, Case, extendBaseClasses, evolve }

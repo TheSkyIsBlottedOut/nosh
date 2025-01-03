@@ -14,6 +14,11 @@ const LogPriority = {
 export class Logger {
   app = 'app'
   #logs = Object.create({})
+  #logfile = {
+    writer: async () => { $`sleep 1` },
+    read: async () => { $`sleep 1` }
+  }
+  #writer = async () => { $`sleep 1` }
   #config = { ...defaultConfig }
   currentLog = { data: { context: {} } }
   appStart = 101
@@ -43,28 +48,30 @@ export class Logger {
     await this.#writer.write(logs)
   }
   set config(cfg) { this.#config = { ...this.#config, ...cfg } }
-  get config() { return { ...defaultConfig, ...this.#config}}
+  get config() { return { ...defaultConfig, ...this.#config } }
   get logfilename() {
     const date = new Date()
-    const datevalue = {Y: date.getFullYear(),
+    const datevalue = {
+      Y: date.getFullYear(),
       M: date.getMonth() + 1,
       D: date.getDate(),
       H: date.getHours(),
       m: date.getMinutes(),
-      s: date.getSeconds()}
+      s: date.getSeconds()
+    }
     const datetime = this.config.file.fileNameTimeFormat.replace(/%(\w)/g, (match, key) => datevalue[key])
     return this.config.file.fileNameTimeFormat.replace(/:(\w+)/g, (match, key) => {
       if (key === 'app') return this.appName
       if (key === 'time') return datevalue
     })
- }
+  }
   get logfile() { return `${LogDir}/${this.logfilename}` }
   data(dataval = {}) {
     this.currentLog.data = { ...this.currentLog.data, ...dataval }
     return this
   }
 
-  log(level, msg, data={}) {
+  log(level, msg, data = {}) {
     data = { ...this.currentLog.data, ...data }
     this.currentLog = { ...this.currentLog, level, msg, data, timestamp: +new Date() }
     this.completeLog()
@@ -78,11 +85,11 @@ export class Logger {
     return this
   }
 
-  trace(msg, data={}) { this.log('trace', msg, data) }
-  info(msg, data={}) { this.log('info', msg, data) }
-  warn(msg, data={}) { this.log('warn', msg, data) }
-  warning(msg, data={}) { this.log('warn', msg, data) }
-  error(msg, data={}) {
+  trace(msg, data = {}) { this.log('trace', msg, data) }
+  info(msg, data = {}) { this.log('info', msg, data) }
+  warn(msg, data = {}) { this.log('warn', msg, data) }
+  warning(msg, data = {}) { this.log('warn', msg, data) }
+  error(msg, data = {}) {
     if (msg instanceof Error) {
       data = { ...data, stack: msg.stack }
       msg = msg.message
@@ -92,13 +99,13 @@ export class Logger {
     }
   }
 
-  fatal(msg, data={}) { this.log('fatal', msg, data) }
-  crit(msg, data={}) { this.log('crit', msg, data) }
-  critical(msg, data={}) { this.log('crit', msg, data) }
-  alert(msg, data={}) { this.log('alert', msg, data) }
-  debug(msg, data={}) { this.log('debug', msg, data) }
-  chatty(msg, data={}) { this.log('chatty', msg, data) }
-  verbose(msg, data={}) { this.log('verbose', msg, data) }
+  fatal(msg, data = {}) { this.log('fatal', msg, data) }
+  crit(msg, data = {}) { this.log('crit', msg, data) }
+  critical(msg, data = {}) { this.log('crit', msg, data) }
+  alert(msg, data = {}) { this.log('alert', msg, data) }
+  debug(msg, data = {}) { this.log('debug', msg, data) }
+  chatty(msg, data = {}) { this.log('chatty', msg, data) }
+  verbose(msg, data = {}) { this.log('verbose', msg, data) }
 
   withRequestId(reqid) { return this.context({ requestId: reqid }) }
   withSessionId(sessionid) { return this.context({ sessionId: sessionid }) }
@@ -117,7 +124,7 @@ export class Logger {
     const format = new NString(this.config.console.format)
     if (format.matches(/\:/m)) {
       const data = JSON.stringify(this.currentLog.data, null, 2)
-      const { app, level, msg } = {  msg: 'unknown.event', level: 'info', app: this.appName, ...this.currentLog }
+      const { app, level, msg } = { msg: 'unknown.event', level: 'info', app: this.appName, ...this.currentLog }
       console.log(format.interpolate({ app, level, msg, timestamp: timestring, data }))
     }
   }
@@ -132,7 +139,7 @@ export class Logger {
   withClientId(clientid) {
     if (/\w+\:\w+/.test(clientid)) {
       const [client, __] = clientid.split(':')
-      return this.context({ clientId: client})
+      return this.context({ clientId: client })
     } else {
       // it's header encrypted and base64'd - won't know this yet
       return this.context({ clientId: '<encrypted>' })
@@ -140,32 +147,34 @@ export class Logger {
   }
   withRequest(req) {
     this.requestStart = +new Date()
-    if (req.headers['x-request-id'])  this.withRequestId(req.headers['x-request-id'])
-    if (req.headers['x-session-id'])  this.withSessionId(req.headers['x-session-id'])
-    if (req.headers['x-user-id'])     this.withUserId(req.headers['x-user-id'])
-    if (req.headers['x-client-id'])   this.withClientId(req.headers['x-client-id'])
-    return this.context({ request: {
-      start: this.requestStart,
-      uri: {
-        host: req.headers.host || req.hostname || req.host || req.headers['x-forwarded-host'] || this.app,
-        params: req.params,
-        query: req.query,
-        method: req.method,
-        hashmark: req.url.split('#')[1],
-        ssl: req.secure,
-        url: req.url,
-      },
-      connection: {
-        remoteAddress: req.connection.remoteAddress,
-        remotePort: req.connection.remotePort,
-        localAddress: req.connection.localAddress,
-        localPort: req.connection.localPort,
-        forwardedFor: req.headers['x-forwarded-for'],
-        forwardedHost: req.headers['x-forwarded-host'],
-        realIp: req.headers['x-real-ip']
-      },
-      bodyUsed: (!!req.body) ? '<empty>' : ((typeof req.body === 'string') ? req.body : JSON.stringify(req.body)).length
-    }})
+    if (req.headers['x-request-id']) this.withRequestId(req.headers['x-request-id'])
+    if (req.headers['x-session-id']) this.withSessionId(req.headers['x-session-id'])
+    if (req.headers['x-user-id']) this.withUserId(req.headers['x-user-id'])
+    if (req.headers['x-client-id']) this.withClientId(req.headers['x-client-id'])
+    return this.context({
+      request: {
+        start: this.requestStart,
+        uri: {
+          host: req.headers.host || req.hostname || req.host || req.headers['x-forwarded-host'] || this.app,
+          params: req.params,
+          query: req.query,
+          method: req.method,
+          hashmark: req.url.split('#')[1],
+          ssl: req.secure,
+          url: req.url,
+        },
+        connection: {
+          remoteAddress: req.connection.remoteAddress,
+          remotePort: req.connection.remotePort,
+          localAddress: req.connection.localAddress,
+          localPort: req.connection.localPort,
+          forwardedFor: req.headers['x-forwarded-for'],
+          forwardedHost: req.headers['x-forwarded-host'],
+          realIp: req.headers['x-real-ip']
+        },
+        bodyUsed: (!!req.body) ? '<empty>' : ((typeof req.body === 'string') ? req.body : JSON.stringify(req.body)).length
+      }
+    })
   }
 }
 

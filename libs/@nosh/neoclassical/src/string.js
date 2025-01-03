@@ -1,8 +1,9 @@
 import { NeoCore } from './core.js';
 import { NeoArray } from './array.js';
-import * as html from 'inc/html.json'
+import html from './inc/html.json'
 import { NeoNumber } from './number.js';
 class NeoString extends NeoCore {
+  #value = ''
   constructor(str) { this.#value = (typeof str === 'string') ? str : str.toString(); }
   #N(str) { return new NeoString(str) }
   #NA(...args) { return new NeoArray(...args) }
@@ -61,10 +62,9 @@ class NeoString extends NeoCore {
   toUpperCase() { return this.#N(this.value.toUpperCase()) }
   trim() { return this.strip }
   valueOf() { return this.#value }
-
   chunk(n) { return this.#NA(this.match(new RegExp(`.{1,${n}}`, 'g'))) }
   count(sub) { return this.split(sub).length }
-  static fromCharCode(...args) { return this.#N(String.fromCharCode(...args)); }
+  static fromCharCode(...args) { return new NeoString(String.fromCharCode(...args)); }
   static fromHexCode(...args) { return this.fromCharCode(parseInt(args, 16)); }
   get isPalindrome() { return this.alphanumeric_only === this.alphanumeric_only.reversed; }
 
@@ -103,7 +103,8 @@ class NeoString extends NeoCore {
   get upper() { return this.toUpperCase(); }
 
   longestCommonSubstring(s2) {
-    let s1 = this.lower, s2 = s2.lower
+    let s1 = this.lower
+    s2 = s2.lower
     if (!s1 || !s2) return ''
     if (s1 === s2) return s1;
     let s1l = s1.length, s2l = s2.length, num = this.#NA(s1l), maxlen = 0, lastSubsBegin = 0, thisSubsBegin = 0, subsequence = '', thisSubsLength = 0, matrix = this.#NA(s1l);
@@ -126,7 +127,9 @@ class NeoString extends NeoCore {
   }
 
   uncommon_xgrams(s2, minsize = 2) {
-    let s1 = this, s2 = s2.neo ? s2 : this.#N(s2), minsize = this.#NN(minsize);
+    let s1 = this
+    s2 = s2.neo ? s2 : this.#N(s2)
+    minsize = this.#NN(minsize);
     if (!s1 || !s2) return '';
     if (s1 === s2) return '';
     if (s1.length < minsize || s2.length < minsize) return '';
@@ -139,7 +142,8 @@ class NeoString extends NeoCore {
     return results;
   }
   lexemeSimilarity(str2) {
-    let str1 = this, str2 = str2.neo ? str2 : this.#N(str2);
+    let str1 = this
+    str2 = str2.neo ? str2 : this.#N(str2)
     if (!str2) return 0;
     if (str1 === str2) return 1;
     let str1words = str1.words, str2words = str2.words, common = str1words.filter((x) => str2words.includes(x)), uncommon = str1words.filter((x) => !str2words.includes(x));
@@ -149,7 +153,7 @@ class NeoString extends NeoCore {
   get isEmail() { return this.match(/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/i); }
   interpolate(data = {}, templateStyle = ':token') {
     // use the word token as the pattern in templatestyle, but assume 'this' is a string that needs to be interpolated
-    const templateStyle = this.#N(templateStyle).replace(/\W+/g, '\\$&').replace(/token/g, '(\w+)');
+    templateStyle = this.#N(templateStyle).replace(/\W+/g, '\\$&').replace(/token/g, '(\w+)');
     const pattern = new RegExp(templateStyle, 'g');
     return this.#value.replace(pattern, (_, token) => data[token] ?? '');
   }
