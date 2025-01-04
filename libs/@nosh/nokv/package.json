@@ -1,0 +1,16 @@
+{
+  "name": "nokv",
+  "description": "Nosh's wrapper for lmmdb. Which is the fastest of the pure on-disk kvstores.",
+  "main": "index.js",
+  "type": "module",
+  "private": false,
+  "keywords": ["kvstore", "nosh", "bun", "lmdb"],
+  "version": "0.0.1",
+  "license": "inherit",
+  "engines": {
+    "bun": ">=1.1.38", "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "lmdb": "^0.0.1"
+  }
+}
