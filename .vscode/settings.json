@@ -11,5 +11,6 @@
     "**/node_modules": true,
     "**/.nosh/etc/.*": false,
   },
-  "editor.inlineCompletionsAccessibilityVerbose": true
+  "editor.inlineCompletionsAccessibilityVerbose": true,
+  "editor.tabSize": 2
 }

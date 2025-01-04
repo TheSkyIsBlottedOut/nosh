@@ -4,7 +4,7 @@ import html from './inc/html.json'
 import { NeoNumber } from './number.js';
 class NeoString extends NeoCore {
   #value = ''
-  constructor(str) { this.#value = (typeof str === 'string') ? str : str.toString(); }
+  constructor(str) { super(str); this.#value = (typeof str === 'string') ? str : str.toString(); }
   #N(str) { return new NeoString(str) }
   #NA(...args) { return new NeoArray(...args) }
   #NN(...args) { return new NeoNumber(...args) }

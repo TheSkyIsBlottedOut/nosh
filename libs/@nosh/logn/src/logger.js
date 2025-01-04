@@ -18,16 +18,15 @@ export class Logger {
     writer: async () => { $`sleep 1` },
     read: async () => { $`sleep 1` }
   }
-  #writer = async () => { $`sleep 1` }
   #config = { ...defaultConfig }
   currentLog = { data: { context: {} } }
   appStart = 101
   requestStart = 102
 
   constructor(appname) {
+    console.log('Initializing logger for', appname)
     this.app = appname
     this.#logfile = Bun.file(`${LogDir}/${this.logfilename}`)
-    this.#writer = this.#logfile.writer
     this.#logs = []
     this.#config = {}
     this.appStart = +new Date()
@@ -40,12 +39,13 @@ export class Logger {
     ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'uncaughtException', 'SIGTERM'].forEach(event => {
       process.on(event, async () => await this.writeLogsToFile())
     })
+    console.log('Done initializing logger for ', this.app)
   }
 
   async writeLogsToFile() {
     const logs = this.#logs.filter(log => LogLevel[log.level] >= LogLevel[this.config.file.level]).map(log => JSON.stringify(log)).join('\n')
     this.logs = []
-    await this.#writer.write(logs)
+    await Bun.write(this.logfile, logs, { append: true })
   }
   set config(cfg) { this.#config = { ...this.#config, ...cfg } }
   get config() { return { ...defaultConfig, ...this.#config } }

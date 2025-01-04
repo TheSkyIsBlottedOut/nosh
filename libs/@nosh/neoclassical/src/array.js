@@ -15,6 +15,7 @@ class NeoArray extends NeoCore {
   validator = (i) => true
 
   constructor(...args) {
+    super(args);
     switch (args.length) {
       case 0: break;
       case 1: {
@@ -90,6 +91,12 @@ class NeoArray extends NeoCore {
   }
 
   // Methods
+  every(fn) { return this.array.every(fn) }
+  some(fn) { return this.array.some(fn) }
+  all(fn) { return this.every(fn) }
+  any(fn) { return this.some(fn) }
+  none(fn) { return !this.some(fn) }
+
   at(idx) { idx < 0 ? this.array[this.array.length + idx] : this.array[idx] }
   get length() { return this.array.length }
   get first() { return this.array[0] }
@@ -118,7 +125,6 @@ class NeoArray extends NeoCore {
   get compact() { return this.array.filter(i => i) }
   get flatten() { return this.array.flat() }
   get flat() { return this.flatten }
-
   #N (...args) { return new NeoArray(...args) }
   get grouped() {
     return this.array.reduce((acc, v) => {
@@ -151,18 +157,17 @@ class NeoArray extends NeoCore {
       }
       this.type.push(`${dimensions}-dimensional`)
     } else {
-      if (this.array.every(i => i.every(Number.isInteger))) this.type.push('integer')
-      if (this.array.every(i => i.every(Number.isFinite))) this.type.push('float')
-      if (this.array.every(i => i.every(Number.isNaN))) this.type.push('NaN')
-      if (this.array.every(i => typeof i === 'string')) {
-        this.type.push((this.array.every(i => i.length === 1)) ? 'character' : 'string')
+      if (this.every(Number.isInteger)) this.type.push('integer')
+      if (this.every(Number.isFinite)) this.type.push('float')
+      if (this.every(Number.isNaN)) this.type.push('NaN')
+      if (this.every(i => typeof i === 'string')) {
+        this.type.push((this.every(i => i.length === 1)) ? 'character' : 'string')
       }
-      if (this.array.every(i => i.every(typeof i == 'number' && i > 0 && i <= 1))) this.type.push('statistical')
-      if (this.array.every(i => i.every(typeof i == 'number' && i >= 0))) this.type.push('positive')
-      if (this.array.every(i => i.every(typeof i == 'number' && i < 0))) this.type.push('negative')
-      if (this.array.map(i => i.constructor?.name).unique().length === 1) this.type.push(this.array[0].constructor.name)
+      if (this.every(i => typeof i == 'number' && i > 0 && i <= 1)) this.type.push('statistical')
+      if (this.every(i => typeof i == 'number' && i >= 0)) this.type.push('positive')
+      if (this.every(i => typeof i == 'number' && i < 0)) this.type.push('negative')
     }
-    if (this.array.flat().every(i => typeof i === 'number')) {
+    if (this.flatten.every(i => typeof i === 'number')) {
       this.type.push('Number')
       this.type.push('numeric')
       const largest = Math.max(...this.array.flat())

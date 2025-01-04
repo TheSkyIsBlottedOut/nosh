@@ -7,7 +7,10 @@
   "keywords": ["bun", "pastebin", "nosh"],
   "version": "0.0.2",
   "license": "SEE LICENSE IN LICENSE.md",
-  "engines": { "bun": ">=1.1.38", "node": ">=16.0.0" },
+  "engines": {
+    "bun": ">=1.1.38",
+    "node": ">=16.0.0"
+  },
   "publishConfig": {
     "access": "restricted",
     "registry": "http://nosh.registry:4873"
@@ -25,7 +28,7 @@
     "type": "git",
     "url": "keybase://team/fintechblackops/graybin"
   },
-  "workspaces": [ "libs/**/*" ],
+  "workspaces": ["libs/**/*"],
   "devDependencies": {
     "bun": "^1.1.38",
     "react": "^19.0.0",
@@ -36,7 +39,7 @@
   },
   "dependencies": {
     "base-64": "^1.0.0",
-    "lmdb": "^3.2.0",
+    "lmdb": "^3.2.1",
     "nacl": "^0.1.3",
     "node-rsa": "^1.1.1",
     "qrcode": "^1.5.4",

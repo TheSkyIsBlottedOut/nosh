@@ -66,6 +66,7 @@ class ResponseBuilder {
   #message = 'response.complete'
   #data = Object.create({})
   constructor() {
+    console.log('[RESPONSE] Generating Response Builder')
     this.#status = 200
     this.#message = 'response.complete'
     this.#data = {}
@@ -118,12 +119,7 @@ const preflightChecks = (req, preflights, idents) => {
   return validator
 }
 
-export const bruteForceAppRoot = async (req) => {
-  if (!!process.env.Nosh_AppRoot) return process.env.Nosh_AppRoot
-  const path_with_nosh = await $`FPT='.' && cd ${import.meta.dirname} && while [[ ! -d $FPT/.nosh && $(realpath "$FPT") != "/" ]]; do FPT="$FPT/.."; done && echo "$(realpath "${FPT}")"`.text().trim()
-  if (path_with_nosh == '/') return null
-  return path_with_nosh
-}
+export const bruteForceAppRoot = async (req) => await pragma.repo ? pragma.repo : await pragma.findAppRoot(req) ?? null
 
 const findNoshBin = async (req) => {
   if (!!process.env.Nosh_BinDir) return [process.env.Nosh_BinDir, 'nosh'].join('/')
@@ -134,6 +130,7 @@ const findNoshBin = async (req) => {
 
 
 const createHelpers = async (req) => {
+  console.log('[HELPERS] Creating Helpers')
   const body = await req.json() ?? {}
   const req_with_body = Object.assign(req, { body })
   const retval = {
@@ -151,6 +148,7 @@ const createHelpers = async (req) => {
 }
 
 const handleApiRequest = async (req, requesthandlerdefintion) => {
+  console.log('[API] Handling API Request')
   // expand request, do preflights, log, call endpoint, validate response
   const helpers = await createHelpers(req)
   const { handler, preflights, unauthenticated, withoutApiKey, bots, cors } = requesthandlerdefintion
@@ -175,6 +173,7 @@ const handleApiRequest = async (req, requesthandlerdefintion) => {
 const Pages = new Map()
 
 const handleFSRouterRequest = async (req, fsrouter) => {
+  console.log('[FSROUTER] Handling FS Router request')
   const helpers = await createHelpers(req)
   const uri = req.uri
   // auth states must be handled internally; we will just pass the helpers along
@@ -188,4 +187,4 @@ const handleFSRouterRequest = async (req, fsrouter) => {
   }
 }
 
-export { handleApiRequest }
+export { handleApiRequest, handleFSRouterRequest }
