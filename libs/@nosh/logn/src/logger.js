@@ -1,4 +1,5 @@
 import { $ } from 'bun'
+import { O_O } from 'unhelpfully'
 import defaults from './defaults.json' assert { type: 'json' }
 const defaultConfig = defaults.logger
 const RootDir = process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
@@ -11,63 +12,52 @@ const LogPriority = {
   crit: 6, fatal: 6
 }
 
+const LevelEmojis = {
+  trace: '🔍', chatty: '🗣️', verbose: '🔊',
+  debug: '🐞', info: 'ℹ️', warn: '⚠️',
+  error: '❌', alert: '🚨',
+  crit: '🚫', fatal: '💀'
+}
+
 export class Logger {
   app = 'app'
-  #logs = Object.create({})
-  #logfile = {
-    writer: async () => { $`sleep 1` },
-    read: async () => { $`sleep 1` }
-  }
+  #logs = O_O.obj
   #config = { ...defaultConfig }
   currentLog = { data: { context: {} } }
-  appStart = 101
-  requestStart = 102
+  #timing = O_O.obj
 
   constructor(appname) {
-    console.log('Initializing logger for', appname)
     this.app = appname
-    this.#logfile = Bun.file(`${LogDir}/${this.logfilename}`)
     this.#logs = []
     this.#config = {}
-    this.appStart = +new Date()
-    this.requestStart = 0
+    this.#timing = { app: +new Date() } // request timing could cause conflicts
     this.currentLog = { data: { context: {} } }
     this.initLogger()
   }
 
   initLogger() {
-    ['exit', 'SIGINT', 'SIGUSR1', 'SIGUSR2', 'uncaughtException', 'SIGTERM'].forEach(event => {
+    ['exit', 'SIGINT', 'SIGTERM'].forEach(event => {
       process.on(event, async () => await this.writeLogsToFile())
     })
-    console.log('Done initializing logger for ', this.app)
   }
 
   async writeLogsToFile() {
     const logs = this.#logs.filter(log => LogLevel[log.level] >= LogLevel[this.config.file.level]).map(log => JSON.stringify(log)).join('\n')
     this.logs = []
     await Bun.write(this.logfile, logs, { append: true })
-  }
+   }
+
   set config(cfg) { this.#config = { ...this.#config, ...cfg } }
   get config() { return { ...defaultConfig, ...this.#config } }
+
   get logfilename() {
-    const date = new Date()
-    const datevalue = {
-      Y: date.getFullYear(),
-      M: date.getMonth() + 1,
-      D: date.getDate(),
-      H: date.getHours(),
-      m: date.getMinutes(),
-      s: date.getSeconds()
-    }
-    const datetime = this.config.file.fileNameTimeFormat.replace(/%(\w)/g, (match, key) => datevalue[key])
-    return this.config.file.fileNameTimeFormat.replace(/:(\w+)/g, (match, key) => {
-      if (key === 'app') return this.appName
-      if (key === 'time') return datevalue
-    })
+    const start = new Date()
+    const month = (start.getMonth() + 1).toString().padStart(2, '0')
+    return `${this.app}-${start.getFullYear()}.${month}.${start.getDate()}.log`
   }
   get logfile() { return `${LogDir}/${this.logfilename}` }
   data(dataval = {}) {
-    this.currentLog.data = { ...this.currentLog.data, ...dataval }
+    this.currentLog.data = { context: {}, ...this.currentLog.data, ...dataval }
     return this
   }
 
@@ -79,16 +69,14 @@ export class Logger {
   }
 
   context(contextdata) {
-    this.currentLog.data ||= {}
-    this.currentLog.data.context ||= {}
-    this.currentLog.data.context = { ...this.currentLog.data.context, ...contextdata }
+    this.data().currentLog.data.context = { ...this.currentLog.data.context, ...contextdata }
     return this
   }
-
-  trace(msg, data = {}) { this.log('trace', msg, data) }
-  info(msg, data = {}) { this.log('info', msg, data) }
-  warn(msg, data = {}) { this.log('warn', msg, data) }
-  warning(msg, data = {}) { this.log('warn', msg, data) }
+  get sinceAppStart() { return +new Date() - this.#timing.app }
+  trace(msg, data = {}) { return this.log('trace', msg, data) }
+  info(msg, data = {}) { return this.log('info', msg, data) }
+  warn(msg, data = {}) { return this.log('warn', msg, data) }
+  warning(msg, data = {}) { return this.log('warn', msg, data) }
   error(msg, data = {}) {
     if (msg instanceof Error) {
       data = { ...data, stack: msg.stack }
@@ -99,42 +87,45 @@ export class Logger {
     }
   }
 
-  fatal(msg, data = {}) { this.log('fatal', msg, data) }
-  crit(msg, data = {}) { this.log('crit', msg, data) }
-  critical(msg, data = {}) { this.log('crit', msg, data) }
-  alert(msg, data = {}) { this.log('alert', msg, data) }
-  debug(msg, data = {}) { this.log('debug', msg, data) }
-  chatty(msg, data = {}) { this.log('chatty', msg, data) }
-  verbose(msg, data = {}) { this.log('verbose', msg, data) }
+  fatal(msg, data = {}) { return this.log('fatal', msg, data) }
+  crit(msg, data = {}) { return this.log('crit', msg, data) }
+  critical(msg, data = {}) { return this.log('crit', msg, data) }
+  alert(msg, data = {}) { return this.log('alert', msg, data) }
+  debug(msg, data = {}) { return this.log('debug', msg, data) }
+  chatty(msg, data = {}) { return this.log('chatty', msg, data) }
+  verbose(msg, data = {}) { return this.log('verbose', msg, data) }
 
-  withRequestId(reqid) { return this.context({ requestId: reqid }) }
-  withSessionId(sessionid) { return this.context({ sessionId: sessionid }) }
-  withUserId(userid) { return this.context({ userId: userid }) }
-  logToConsole() {
-    if (LogPriority[this.currentLog.level] < LogPriority[this.config.console.level]) return
-    const timenow = +new Date()
-    var elapsed = timenow - this.requestStart
-    let timestring = ''
-    while (elapsed > 1000) {
+  withRequestId(reqid = null) { reqid ??= Bun.randomUUIDv7(); return this.context({ requestId: reqid }) }
+  withSessionId(sessionid)  { return this.context({ sessionId: sessionid }) }
+  withUserId(userid)        { return this.context({ userId: userid }) }
+  get elapsedTimestamp() {
+    let elapsed = this.sinceAppStart, timestring = ''
+    while (elapsed > 0) {
       const [time, unit] = Microtime.find(([time, unit]) => elapsed > +time)
       elapsed -= +time
       timestring += `${time}${unit}`
     }
-    timestring += `${elapsed}ms`
-    const format = new NString(this.config.console.format)
-    if (format.matches(/\:/m)) {
-      const data = JSON.stringify(this.currentLog.data, null, 2)
-      const { app, level, msg } = { msg: 'unknown.event', level: 'info', app: this.appName, ...this.currentLog }
-      console.log(format.interpolate({ app, level, msg, timestamp: timestring, data }))
+    timestring += `${elapsed}ms${Bun.nanoseconds() / 1000}μs`
+    return timestring
+  }
+
+  logToConsole() {
+    // normally, don't log debug or trace messages unless Bun.env.logLevel is set.
+    let format = this.#config.console?.format
+    if (typeof format === 'string') {
+      const logdata = { app: this.appName, time: new Date().toISOString(), level: this.currentLog.level, msg: this.currentLog.msg, data: this.currentLog.data }
+      const output = O_O.interpolate(format, logdata)
+      Bun.write(Bun.stdout, output + '\n')
+    } else {
+      Bun.write(Bun.stdout, `[${this.elapsedTimestamp}] ${LevelEmojis[this.currentLog.level]} ${this.appName} ${this.currentLog.level.toUpperCase()} ${this.currentLog.msg}\n${JSON.stringify(this.currentLog.data, null, 2)}\n--------------------------------------------------\n`)
     }
   }
 
   completeLog() {
-    this.logToConsole()
     this.#logs.push(this.currentLog)
+    this.logToConsole()
     this.currentLog = { data: { context: {} } }
   }
-
 
   withClientId(clientid) {
     if (/\w+\:\w+/.test(clientid)) {
@@ -146,14 +137,13 @@ export class Logger {
     }
   }
   withRequest(req) {
-    this.requestStart = +new Date()
-    if (req.headers['x-request-id']) this.withRequestId(req.headers['x-request-id'])
+    this.withRequestId(req.headers['x-request-id'])
     if (req.headers['x-session-id']) this.withSessionId(req.headers['x-session-id'])
     if (req.headers['x-user-id']) this.withUserId(req.headers['x-user-id'])
     if (req.headers['x-client-id']) this.withClientId(req.headers['x-client-id'])
     return this.context({
       request: {
-        start: this.requestStart,
+        timing: { start: this.#timing.request, elapsed: this.sinceRequestStart },
         uri: {
           host: req.headers.host || req.hostname || req.host || req.headers['x-forwarded-host'] || this.app,
           params: req.params,
