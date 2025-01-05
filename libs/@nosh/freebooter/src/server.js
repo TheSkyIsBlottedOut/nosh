@@ -10,15 +10,15 @@ class BunServer {
   #bunconfig = O_O.obj
   #server = Bun.serve({fetch: async () => {}})
   constructor(configdata) {
-    console.log('[BOOT] setting up BunServer...')
     this.#config = configdata
     this.#bunconfig = new Freebooter(configdata)
-    console.log('[BOOT] BunServer setup complete')
+    this.logger.trace('[BOOT] BunServer setup complete')
   }
 
   get pathToRepo() { return this.#bunconfig.pathToRepo }
   get pathToApp() { return this.#config.appRoot ?? this.#bunconfig.pathToApp }
   get config() { return { ...this.#config } }
+  get logger() { return this.#bunconfig.logger }
 
   async preloadService() {
     console.log('[BOOT] Preloading service')
@@ -39,29 +39,21 @@ class BunServer {
   }
 
   async start() {
-    console.log('[BOOT] Bunserver.start')
-    await this.initServer()
-    console.log('preloadService')
+    this.logger.info('starting.service')
     await this.preloadService()
-    console.log('#server.start')
-    await this.#server.start()
-    console.log('Server started')
-    pragma.logger.info(`Service application ${this.config.name} started on port ${port}`)
-  }
-
-  respond(rval) {
-    return new Response(rval)
+    await this.initServer()
   }
 
   async initServer() {
-    console.log('[BOOT] Actually running Bun.serve')
     this.#server = Bun.serve({
       port: this.#config.port ?? 7070,
       static: this.#bunconfig.routes.static,
       logger: this.#bunconfig.logger,
-      async fetch(req) {
-        return this.respond('Hi')
-        const log = O_O.curry(pragma.logger.withRequest(req))
+      fetch: async (req) => {
+        this.logger.withRequest(req).trace('request.start')
+        return Response.json({ message: 'Hello, World!' })
+      }
+/*        const log = O_O.curry(pragma.logger.withRequest(req))
         console.log('[SERVER] Fetching request', req.url)
         log.trace('request.start')
         const { pathname, searchParams } = new URL(req.url)
@@ -82,6 +74,7 @@ class BunServer {
           return new Response('Not Found', { status: 404 })
         }
       }
+      */
     })
   }
 

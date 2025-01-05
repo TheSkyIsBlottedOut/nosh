@@ -63,7 +63,7 @@ export class Logger {
 
   log(level, msg, data = {}) {
     data = { ...this.currentLog.data, ...data }
-    this.currentLog = { ...this.currentLog, level, msg, data, timestamp: +new Date() }
+    this.currentLog = { ...this.currentLog, level, msg, data, timestamp: +new Date(), app: this.app }
     this.completeLog()
     return this
   }
@@ -100,12 +100,16 @@ export class Logger {
   withUserId(userid)        { return this.context({ userId: userid }) }
   get elapsedTimestamp() {
     let elapsed = this.sinceAppStart, timestring = ''
-    while (elapsed > 0) {
-      const [time, unit] = Microtime.find(([time, unit]) => elapsed > +time)
-      elapsed -= +time
-      timestring += `${time}${unit}`
+    while (elapsed > 1000) {
+      Microtime.forEach(([time, unit]) => {
+        console.log({ time, unit, elapsed })
+        if (elapsed >= time) {
+          elapsed -= time
+          timestring += `${time}${unit}`
+        }
+      })
     }
-    timestring += `${elapsed}ms${Bun.nanoseconds() / 1000}μs`
+    timestring += `${elapsed}ms`
     return timestring
   }
 
@@ -117,7 +121,7 @@ export class Logger {
       const output = O_O.interpolate(format, logdata)
       Bun.write(Bun.stdout, output + '\n')
     } else {
-      Bun.write(Bun.stdout, `[${this.elapsedTimestamp}] ${LevelEmojis[this.currentLog.level]} ${this.appName} ${this.currentLog.level.toUpperCase()} ${this.currentLog.msg}\n${JSON.stringify(this.currentLog.data, null, 2)}\n--------------------------------------------------\n`)
+      Bun.write(Bun.stdout, `[${this.elapsedTimestamp}] ${LevelEmojis[this.currentLog.level]} ${this.app} ${this.currentLog.level.toUpperCase()} ${this.currentLog.msg}\n${JSON.stringify(this.currentLog.data, null, 2)}\n--------------------------------------------------\n`)
     }
   }
 
