@@ -9,15 +9,15 @@
     }
   },
   "routes": {
-    "prefix": "src",
+    "prefix": null,
     "static": {
       "paths": ["public"],
       "options": { "maxAge": 0 }
     },
-    "named": { "paths": ["api"] },
-    "views": "scenes"
+    "named": { "paths": ["src/api"] },
+    "views": "src/scenes"
   },
-  "pageSettings": {
+  "page": {
     "robots": ["noindex", "nofollow", "norobots"],
     "title": "Greybin - anonymous sharing",
     "publicUrl": "/public",

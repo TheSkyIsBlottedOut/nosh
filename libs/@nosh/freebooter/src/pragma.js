@@ -2,10 +2,6 @@ import Neo, { evolve } from 'neoclassical'
 import { Logger } from 'logn'
 import { O_O } from 'unhelpfully'
 import { promisify } from 'util'
-import { v4 as uuid } from 'uuid'
-
-console.log('[BOOT] Creating #pragma. You need pragma.')
-
 
 
 // why do i have 20 copies of this
@@ -28,11 +24,16 @@ const bruteForceRepoRoot = async () => {
 
 
 
-const pragma = { ...Neo }
-pragma.O_O = O_O
-pragma.fn = O_O.fn
-pragma.up = evolve
-pragma.uuid = uuid
-pragma.promisify = promisify
-O_O.add('repo').to(pragma).get(async () => await bruteForceRepoRoot())
+const pragma = {
+  ...Neo,
+  O_O,
+  fn: O_O.fn,
+  up: evolve,
+  uuid: Bun.randomUUIDv7,
+  promisify,
+  repo: async () => await bruteForceRepoRoot(),
+  appname: 'untitled-application',
+  logger: console.log,
+  initLogger() { this.logger = new Logger(this.appname) }
+}
 export { pragma }

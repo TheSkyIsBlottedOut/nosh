@@ -5,70 +5,75 @@ import { O_O } from 'unhelpfully'
 import { handleApiRequest, handleFSRouterRequest } from './helpers'
 
 
-
 class BunServer {
   #config = O_O.obj
   #bunconfig = O_O.obj
   #server = Bun.serve({fetch: async () => {}})
   constructor(configdata) {
-    console.log('[BOOT] Initializing server, which gives all the work to Freebooter')
     this.#config = configdata
     this.#bunconfig = new Freebooter(configdata)
+    this.logger.trace('[BOOT] BunServer setup complete')
   }
 
   get pathToRepo() { return this.#bunconfig.pathToRepo }
-  get pathToApp() { return this.#bunconfig.pathToApp }
+  get pathToApp() { return this.#config.appRoot ?? this.#bunconfig.pathToApp }
   get config() { return { ...this.#config } }
-
-  async navToApp() { await $`cd ${this.pathToApp}` }
+  get logger() { return this.#bunconfig.logger }
 
   async preloadService() {
     console.log('[BOOT] Preloading service')
-    await this.navToApp()
+    await $`cd ${this.pathToApp}`
     await this.#bunconfig.loadAllRoutes()
     console.log('[BOOT] Service preloaded')
     return this
   }
 
   apiRouteFor(path) {
-    console.log('[ROUTER] Finding route for', path)
-    const { defined } = this.#bunconfig.routes
-    // replace all :interpolations with [^\/]+
-    // todo: optionals
-    const matching_paths = defined.filter(route => new RegExp(route.replace(/:\w+/g, '[\w\-\.+]')).test(path))
-    if (matching_paths.length > 0) return matching_paths[matching_paths.length - 1]
-    return null
+    if (!path || !Array.isArray(this.#bunconfig.routes.defined) || this.#bunconfig.routes.defined.length === 0) return undefined
+    console.log(this.#bunconfig.routes.defined)
+    this.logger.data({ path }).trace('api.route.search')
+    const defined = this.#bunconfig.routes.defined?.map(path => path.split('/'))
+    // reverse interpolate - find routes whose static components match their :prefixed components and have the same number of arguments.
+    const path_parts = path.split('/')
+    const possible_paths = defined.filter(route => route.length === path_parts.length && route.every((part, idx) => part.startsWith(':') || part === path_parts[idx]))
+    if (possible_paths.length === 0) return undefined
+    return possible_paths[0]
   }
 
   async start() {
-    console.log('[BOOT] Starting server')
-    await this.initServer(port = null)
-    port ??= this.config.port
-    await this.#server.start({ port })
-    pragma.logger.info(`Service application ${this.config.name} started on port ${port}`)
+    this.logger.info('starting.service')
+    await this.preloadService()
+    await this.initServer()
   }
 
   async initServer() {
-    console.log('[BOOT] Actually running Bun.serve')
     this.#server = Bun.serve({
       port: this.#config.port ?? 7070,
       static: this.#bunconfig.routes.static,
-      async fetch(req) {
+      logger: this.#bunconfig.logger,
+      fetch: async (req) => {
+        const log = this.logger.withRequest(req)
         console.log('[SERVER] Fetching request', req.url)
-        this.#bunconfig.logger.withRequest(req).info("request.start")
+        log.trace('request.start')
         const { pathname, searchParams } = new URL(req.url)
         // is this an FS route, or is it defined as an api route?
+        // API routes are slower to resolve, so we check them last
+        if (this.#bunconfig.routes.static?.[pathname]) {
+          log.data({ pathname }).trace('static.route.found')
+          return this.#bunconfig.routes.static[pathname]
+        }
+        if (this.#bunconfig.routes.pages?.match(pathname)) {
+          log.data({ pathname }).trace('pages.route.found')
+          // todo - autowrap layout.jsx
+          return handleFSRouterRequest(this.#bunconfig.router.pages[pathname]) ?? new Response('Not Found', { status: 404 })
+        }
         const api_route = this.apiRouteFor(pathname)
         if (api_route) {
+          log.data({ api_route }).trace('api.route.found')
           // right now we're ignoring middleware configs, and maybe middleware?
-
           const { handler, method } = api_route
           return await this.handleApiRequest(req, { handler, method })
-        } else if (this.#bunconfig.routes.static && this.#bunconfig.routes.static.findFirst(pathname)) {
-          return this.#bunconfig.routes.static[pathname]
-        } else if (this.#bunconfig.routes.pages && this.#bunconfig.routes.pages.match(pathname)) {
-          return handleFSRouterRequest(this.#bunconfig.router.pages[pathname]) ?? new Response('Not Found', { status: 404 })
-        } else {
+        }  else {
           return new Response('Not Found', { status: 404 })
         }
       }
