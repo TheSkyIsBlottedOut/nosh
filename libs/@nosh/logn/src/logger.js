@@ -5,7 +5,7 @@ const defaultConfig = defaults.logger
 const RootDir = process.env.Nosh_AppDir || (await $`git rev-parse --show-toplevel`).text().trim()
 const LogDir = `${RootDir}/logs`
 const Microtime = [[82600, 'd'], [3600, 'h'], [60, 'm'], [1, 's']]
-const LogPriority = {
+const LogLevel = {
   trace: 0, chatty: 1, verbose: 1,
   debug: 2, info: 3, warn: 4,
   error: 5, alert: 5,
@@ -135,15 +135,16 @@ export class Logger {
     }
   }
   withRequest(req) {
-    this.withRequestId(req.headers['x-request-id'])
+    console.log('request headers', Bun.inspect(req.headers))
     if (req.headers['x-session-id']) this.withSessionId(req.headers['x-session-id'])
     if (req.headers['x-user-id']) this.withUserId(req.headers['x-user-id'])
     if (req.headers['x-client-id']) this.withClientId(req.headers['x-client-id'])
+    const uridata = O_O.fn.dissectUrl(req.url)
     return this.context({
       request: {
         timing: { start: this.#timing.request, elapsed: this.sinceRequestStart },
         uri: {
-          host: req.headers.host || req.hostname || req.host || req.headers['x-forwarded-host'] || this.app,
+          ...uridata,
           params: req.params,
           query: req.query,
           method: req.method,

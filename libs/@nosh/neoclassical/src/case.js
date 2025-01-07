@@ -26,6 +26,7 @@ Case.matchers = {
   environment_variable: /_+/g
 }
 Case.types = Object.keys(Case.matchers)
+Case.includes = (str) => Case.types.includes(str)
 
 // first we match tokens, then we convert the array
 const converters = {
@@ -56,14 +57,18 @@ const convertCase = (str, from, to) => {
   return new NeoString(converters[to](tokens))
 }
 
+const allVariations = (str) => {
+  if (typeof str !== 'string') return []
+  const from = discoverCase(str)
+}
+
 const discoverCase = (str) => {
-  const typematchctrs = {}
-  for (let type of Case.types) {
-    typematchctrs[type] = str.match(Case.matchers[type])?.length ?? 0
-  }
-  return typematchctrs.entries.sort((a, b) => b[1] - a[1])[0][0]
+  if (typeof str !== 'string') return 'spaced'
+  return Case.types.find(type => Case.matchers[type].test(str))
 }
 Case._convert = convertCase
+Case.discover = discoverCase
+Case.variations = allVariations
 Case.convert = (str) => ({ to: O_O.fn.curry(convertCase, str, discoverCase(str)) })
 Case.types.forEach(type => {
   O_O.add(type).to(Case).value({

@@ -1,5 +1,6 @@
 import { pragma } from './pragma'
 import { isBot, blockUnsafe } from './botless'
+const { O_O } = pragma
 // create helpers for a bun request
 
 /* test string will be something like 'auth_id' or 'auth.id' or 'auth-id-token'.
@@ -12,33 +13,69 @@ that means to check:
   cookies: auth_id, auth_id_token, auth_id_token, auth.id.token, auth-id-token, auth:id:token, auth|id|token
 */
 
+
+class NeoRequest {
+  #request = {}
+  #headers = {}
+  #body = {}
+  constructor(req) {
+    this.#request = (req instanceof NeoRequest) ? req.originalRequest : req
+    this.#headers = Object.fromEntries(this.#request.headers.entries())
+    this.#body = (typeof this.#request.body === 'object') ? this.#request.body : (typeof this.#request.json === 'function') ? this.#request.json() : {}
+  }
+  get originalRequest() { return this.#request }
+  get headers() { return this.#headers }
+  get params() { return this.#request.params }
+  get query() { return this.#request.query }
+  get cookies() { return this.#request.cookies }
+  get body() { return this.#body }
+  get json() { return this.#request.json }
+  get url() { return this.#request.url }
+  get method() { return this.#request.method }
+  get uri() { return O_O.fn.dissectUrl(this.url) }
+  get path() { return this.uri.pathname }
+  get host() { return this.uri.host }
+  get ip() { return this.#request.connection.remoteAddress }
+  get protocol() { return this.#request.protocol }
+  get secure() { return this.protocol === 'https' }
+  get origin() { return this.headers.origin }
+  get referer() { return this.headers.referer }
+  get userAgent() { return this.headers['user-agent'] }
+  get accept() { return this.headers.accept }
+  get acceptLanguage() { return this.headers['accept-language'] }
+  get acceptEncoding() { return this.headers['accept-encoding'] }
+  get acceptCharset() { return this.headers['accept-charset'] }
+  get acceptType() { return this.headers['accept-type'] }
+  get auth() { return this.headers.authorization }
+}
+
+const test = (val) => (val !== null && val !== undefined && val !== '')
+const { Case } = pragma
+
 const multisource = (req, ...possible_keys) => {
   // body is appended to the request object and curried for the helper.
-  const { Case } = pragma.Neo
-  while (response === null && possible_keys.length > 0) {
-    const possible = new pragma.Neo.NString(possible_keys.shift())
-    const cvt = !!(/^[a-zA-Z]+$/.test(possible))
-    // don't convert cvt values to other cases
-    testvals = cvt ? [possible] : Case.types.map(type => Case.convert(possible, type))
-    const test = (obj) => !!(typeof obj === 'string' && obj.length > 0)
-    testvals.forEach(t => {
-      t = t.toLowerCase()
-      for (hdr of [`N-${t}`, `n-${t}`, `X-${t}`, `x-${t}`]) {
-        if (test(req.headers[hdr])) return req.headers[hdr]
-      }
-      for (loc of ['params', 'query', 'cookies']) {
-        if (test(req[loc][t])) return req[loc][t]
-      }
-      const body = req.json() ?? {}
-      if (body && test(body[t])) return body[t]
-    })
+  let response = null
+  const body = (typeof req.body === 'object') ? req.body : (typeof req.json === 'function') ? req.json() : {}
+  const all_variations = possible_keys.filter(t => typeof t === 'string').map(k => Case.variations(k)).flat()
+  while (response === null && all_variations.length > 0) {
+    const t = all_variations.shift()
+    if (!t || typeof t !== 'string' || t.length < 1) continue
+    for (hdr of [t, `N-${t}`, `X-${t}`]) {
+      if (test(req.headers[hdr])) return req.headers[hdr]
+      if (test(req.headers[hdr.toLowerCase()])) return req.headers[hdr.toLowerCase()]
+    }
+    for (loc of ['params', 'query', 'cookies']) {
+      if (test(req[loc]?.[t])) return req[loc][t]
+    }
+    if (test(body[t])) return body[t]
   }
   return null
 }
 
+
 const identify = (req) => {
   const ids = O_O.fn.obj
-  const host_segments = req.hostname.split('.')
+  const host_segments = req.host.split('.')
   const host = O_O.fn.obj
   if (host_segments.length > 3) {
     if (host_segments[host_segments.length - 2] == 'co') {
@@ -51,13 +88,14 @@ const identify = (req) => {
     host.subdomain = host_segments.join('.')
   }
   const appname = [host.subdomain, host.domain].join('-')
+  ids.host = host
   ids.auth = multisource(req, 'auth', 'nauth', `${appname}-auth`, `${appname}-nauth`)
   ids.client = multisource(req, 'client', 'nclient', `${appname}-client`, `${appname}-nclient`)
   ids.user = multisource(req, 'user', 'nuser', `${appname}-user`, `${appname}-nuser`)
   ids.session = multisource(req, 'session', 'nsession', `${appname}-session`, `${appname}-nsession`)
-  ids.request = req.headers['x-request-id'] ?? req.headers['X-Request-Id'] ?? req.headers['n-request-id'] ?? req.headers['N-Request-Id'] ?? pragma.uuid()
+  ids.request = multisource(req, 'request-id') ?? Bun.randomUUIDv7()
   ids.apikey = multisource(req, 'api key', 'apikey', 'utility-identifier')
-  ids.superuser = multisource(req, 'vainglory')
+  // todo: define a superuser key for higher-level access from configs
   return ids
 }
 
@@ -131,15 +169,14 @@ const findNoshBin = async (req) => {
 
 const createHelpers = async (req) => {
   console.log('[HELPERS] Creating Helpers')
-  const body = await req.json() ?? {}
-  const req_with_body = Object.assign(req, { body })
+  const identifiers = identify(req)
   const retval = {
-    body, req, req_with_body,
+    req,
     _nosh: await findNoshBin(req),
     nosh: async (cmd) => await $`${retval._nosh ?? 'nosh'} ${cmd}`.then(r => { return { text: r.text(), logout: r.stderr } }).catch(errors => ({ errors })),
-    identifiers: identify(req_with_body),
-    multisource: O_O.fn.curry(multisource, req_with_body),
-    log: pragma.logger.withRequest(req_with_body).withRequestId(idents.request),
+    identifiers,
+    multisource: O_O.fn.curry(multisource, req),
+    log: pragma.logger.withRequest(req).withRequestId(identifiers.request),
     res: new ResponseBuilder(),
     success: new ResponseBuilder().status(200),
     error: new ResponseBuilder().status(500),
@@ -147,7 +184,8 @@ const createHelpers = async (req) => {
   return retval
 }
 
-const handleApiRequest = async (req, requesthandlerdefintion) => {
+const handleApiRequest = async (request, requesthandlerdefintion) => {
+  const req = new NeoRequest(request)
   console.log('[API] Handling API Request')
   // expand request, do preflights, log, call endpoint, validate response
   const helpers = await createHelpers(req)
@@ -172,7 +210,8 @@ const handleApiRequest = async (req, requesthandlerdefintion) => {
 
 const Pages = new Map()
 
-const handleFSRouterRequest = async (req, fsrouter) => {
+const handleFSRouterRequest = async (request, fsrouter) => {
+  const req = new NeoRequest(request)
   console.log('[FSROUTER] Handling FS Router request')
   const helpers = await createHelpers(req)
   const uri = req.uri
@@ -187,4 +226,4 @@ const handleFSRouterRequest = async (req, fsrouter) => {
   }
 }
 
-export { handleApiRequest, handleFSRouterRequest }
+export { handleApiRequest, handleFSRouterRequest, NeoRequest }
