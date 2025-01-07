@@ -95,6 +95,12 @@ O_O.ObjWithDefault = class extends Object {
   }
 }
 
+O_O.fn.dissectUrl = (url) => {
+  if (typeof url !== 'string') return { host: 'localhost', protocol: 'http' }
+  const { host, protocol, port, hashmark, path, querystring } = url.match(/^(?<protocol>https?)?\:\/\/(?<host>[^\/]+)(\:(?<port>\d+))?(?<path>\/[^\?]+)?(\?(?<querystring>[^\#]+))?(#(?<hashmark>[^\s]+))?/).groups
+  return { host, protocol, port, path, querystring, hashmark }
+}
+
 O_O._ = new O_O.ObjWithDefault({})
 O_O._.default = (cval) => O_O.fn.curry(cval)
 O_O._.use('proto', Object.getPrototypeOf)

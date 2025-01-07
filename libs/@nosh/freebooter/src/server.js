@@ -2,7 +2,7 @@
 import { Freebooter } from './bootloader'
 import Bun, { $ } from 'bun'
 import { O_O } from 'unhelpfully'
-import { handleApiRequest, handleFSRouterRequest } from './helpers'
+import { handleApiRequest, handleFSRouterRequest, NeoRequest } from './helpers'
 
 
 class BunServer {
@@ -51,7 +51,8 @@ class BunServer {
       port: this.#config.port ?? 7070,
       static: this.#bunconfig.routes.static,
       logger: this.#bunconfig.logger,
-      fetch: async (req) => {
+      fetch: async (request) => {
+        const req = new NeoRequest(request)
         const log = this.logger.withRequest(req)
         console.log('[SERVER] Fetching request', req.url)
         log.trace('request.start')
@@ -65,7 +66,7 @@ class BunServer {
         if (this.#bunconfig.routes.pages?.match(pathname)) {
           log.data({ pathname }).trace('pages.route.found')
           // todo - autowrap layout.jsx
-          return handleFSRouterRequest(this.#bunconfig.router.pages[pathname]) ?? new Response('Not Found', { status: 404 })
+          return handleFSRouterRequest(req, this.#bunconfig.routes.pages[pathname]) ?? new Response('Not Found', { status: 404 })
         }
         const api_route = this.apiRouteFor(pathname)
         if (api_route) {
