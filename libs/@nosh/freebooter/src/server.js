@@ -29,8 +29,10 @@ class BunServer {
   }
 
   apiRouteFor(path) {
+    if (!path || !Array.isArray(this.#bunconfig.routes.defined) || this.#bunconfig.routes.defined.length === 0) return undefined
+    console.log(this.#bunconfig.routes.defined)
     this.logger.data({ path }).trace('api.route.search')
-    const defined = this.#bunconfig.routes.defined.map(path => path.split('/'))
+    const defined = this.#bunconfig.routes.defined?.map(path => path.split('/'))
     // reverse interpolate - find routes whose static components match their :prefixed components and have the same number of arguments.
     const path_parts = path.split('/')
     const possible_paths = defined.filter(route => route.length === path_parts.length && route.every((part, idx) => part.startsWith(':') || part === path_parts[idx]))
@@ -50,31 +52,31 @@ class BunServer {
       static: this.#bunconfig.routes.static,
       logger: this.#bunconfig.logger,
       fetch: async (req) => {
-        this.logger.withRequest(req).trace('request.start')
-        return Response.json({ message: 'Hello, World!' })
-      }
-/*        const log = O_O.curry(pragma.logger.withRequest(req))
+        const log = this.logger.withRequest(req)
         console.log('[SERVER] Fetching request', req.url)
         log.trace('request.start')
         const { pathname, searchParams } = new URL(req.url)
         // is this an FS route, or is it defined as an api route?
+        // API routes are slower to resolve, so we check them last
+        if (this.#bunconfig.routes.static?.[pathname]) {
+          log.data({ pathname }).trace('static.route.found')
+          return this.#bunconfig.routes.static[pathname]
+        }
+        if (this.#bunconfig.routes.pages?.match(pathname)) {
+          log.data({ pathname }).trace('pages.route.found')
+          // todo - autowrap layout.jsx
+          return handleFSRouterRequest(this.#bunconfig.router.pages[pathname]) ?? new Response('Not Found', { status: 404 })
+        }
         const api_route = this.apiRouteFor(pathname)
         if (api_route) {
           log.data({ api_route }).trace('api.route.found')
           // right now we're ignoring middleware configs, and maybe middleware?
           const { handler, method } = api_route
           return await this.handleApiRequest(req, { handler, method })
-        } else if (this.#bunconfig.routes.static && this.#bunconfig.routes.static.findFirst(pathname)) {
-          log.data({ pathname }).trace('static.route.found')
-          return this.#bunconfig.routes.static[pathname] ?? new Response('Not Found', { status: 404, pathname })
-        } else if (this.#bunconfig.routes.pages && this.#bunconfig.routes.pages.match(pathname)) {
-          log.data({ pathname }).trace('pages.route.found')
-          return handleFSRouterRequest(this.#bunconfig.router.pages[pathname]) ?? new Response('Not Found', { status: 404 })
-        } else {
+        }  else {
           return new Response('Not Found', { status: 404 })
         }
       }
-      */
     })
   }
 

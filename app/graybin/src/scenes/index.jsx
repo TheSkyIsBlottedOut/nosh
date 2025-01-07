@@ -1,8 +1,14 @@
+import Layout from  '@/layout'
 
-function Index() {
+
+
+
+export default function Index() {
   return (
-    <div>
-      <h1>Index</h1>
-    </div>
+    <Layout>
+      <div>
+        <h1>Index</h1>
+      </div>
+    </Layout>
   );
 }

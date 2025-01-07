@@ -77,16 +77,6 @@ export class Logger {
   info(msg, data = {}) { return this.log('info', msg, data) }
   warn(msg, data = {}) { return this.log('warn', msg, data) }
   warning(msg, data = {}) { return this.log('warn', msg, data) }
-  error(msg, data = {}) {
-    if (msg instanceof Error) {
-      data = { ...data, stack: msg.stack }
-      msg = msg.message
-      return this.log('error', msg, data)
-    } else {
-      return this.log('error', msg, data)
-    }
-  }
-
   fatal(msg, data = {}) { return this.log('fatal', msg, data) }
   crit(msg, data = {}) { return this.log('crit', msg, data) }
   critical(msg, data = {}) { return this.log('crit', msg, data) }
@@ -94,7 +84,10 @@ export class Logger {
   debug(msg, data = {}) { return this.log('debug', msg, data) }
   chatty(msg, data = {}) { return this.log('chatty', msg, data) }
   verbose(msg, data = {}) { return this.log('verbose', msg, data) }
-
+  error(msg, data = {}) {
+    if (msg instanceof Error) this.data({ stack: msg.stack })
+    return this.log('error', msg.message, data)
+  }
   withRequestId(reqid = null) { reqid ??= Bun.randomUUIDv7(); return this.context({ requestId: reqid }) }
   withSessionId(sessionid)  { return this.context({ sessionId: sessionid }) }
   withUserId(userid)        { return this.context({ userId: userid }) }
@@ -102,10 +95,11 @@ export class Logger {
     let elapsed = this.sinceAppStart, timestring = ''
     while (elapsed > 1000) {
       Microtime.forEach(([time, unit]) => {
-        console.log({ time, unit, elapsed })
-        if (elapsed >= time) {
-          elapsed -= time
-          timestring += `${time}${unit}`
+        if (elapsed >= time * 1000) {
+          const ptime = Math.floor(elapsed / (time * 1000))
+          const reduceby = ptime * time * 1000
+          elapsed -= reduceby
+          timestring += `${ptime}${unit}`
         }
       })
     }
@@ -158,10 +152,10 @@ export class Logger {
           url: req.url,
         },
         connection: {
-          remoteAddress: req.connection.remoteAddress,
-          remotePort: req.connection.remotePort,
-          localAddress: req.connection.localAddress,
-          localPort: req.connection.localPort,
+          remoteAddress: req.connection?.remoteAddress,
+          remotePort: req.connection?.remotePort,
+          localAddress: req.connection?.localAddress,
+          localPort: req.connection?.localPort,
           forwardedFor: req.headers['x-forwarded-for'],
           forwardedHost: req.headers['x-forwarded-host'],
           realIp: req.headers['x-real-ip']

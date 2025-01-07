@@ -43,8 +43,8 @@ class Freebooter {
     console.log('appPathFor', ptrkeys)
     this.logger.data({ ptrkeys }).trace('boot.sequence.fsdata.app.path')
     // returns one or more paths based on the app's configuration
-    const path_values = ptrkeys.reduce((acc, key) => acc[key] ?? Object.create(null), this.#config.routes)
-    if (path_values.length === 0) return null
+    const path_values = ptrkeys.reduce((acc, key) => acc[key] ?? {}, this.#config.routes)
+    if (!path_values || path_values.size < 1) return Promise.resolve([])
     const app_prefix = this.pathToApp + `/${this.#config.routes.prefix ?? '/'}`
     const paths = (Array.isArray(path_values)) ? path_values : [path_values]
     return paths.map(path => [app_prefix, path].join('/').replaceAll(/\/+/g, '/'))
@@ -53,42 +53,54 @@ class Freebooter {
   pageRouting() { // JSX view paths ('pages routing')
     this.logger.trace('boot.sequence.pagesrouting.load.start')
     const dir = this.appPathFor('views')?.shift()
-    // potential enhancement: allow for multiple view directories
+    // potential enhancement: allow for multiple view directories? this would be annoying though.
     this.#routes.pages = (dir.length > 0) ? Bun.FileSystemRouter({ style: 'nextjs', dir }) : undefined
     this.logger.data({ dir }).trace('boot.sequence.pagesrouting.load.end')
     return this.#routes.pages
   }
 
-  async dirExists(dir) { return ((await $`[[ -d ${dir} ]] && echo 'exists'`.text()).trim()) === 'exists' }
-  async fileExists(file) { return ((await $`[[ -f ${file} ]] && echo 'exists'`.text()).trim()) === 'exists' }
+  async dirExists(dir) { return (await $`[[ -d ${dir} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
+  async fileExists(file) { return (await $`[[ -f ${file} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
   async allFilesInPath(dir) {
     if (!dir.startsWith('/')) dir = `${this.appRoot}/${dir}`
     if (!await this.dirExists(dir)) return []
-    return (await $`find ${dir} -type f`.text()).split(/\n/)
+    return (await $`find ${dir} -type f`.text()).split(/\n/).filter(f => f.length > 0 && /\w/.test(f))
   }
 
   async staticFiles(dir) {
     const _ptrlst = neo(this.appPathFor('static', 'paths'))
-    if (_ptrlst.length === 0) return []
+    if (_ptrlst.length === 0) return Promise.resolve([])
     const _paths = _ptrlst.map(async (path) => await this.allFilesInPath(path))
-    return new NeoArray(await Promise.allSettled(_paths)).flatten()
+    return neo(await Promise.allSettled(_paths)).flatten
   }
 
   async staticRouting() {
     const _flattened = await this.staticFiles()
     this.logger.data({ static: _flattened.array }).info('static.files')
-    this.#routes.static = _flattened.reduce(async (acc, file) => new Response(await Bun.file(file).read()).then((response) => { acc[file] = response; return acc }), {})
+    this.#routes.static = _flattened.reduce(async (acc, file) => {
+      console.log('Static file', file)
+      try {
+        const f = Bun.file(file)
+        // key value should only be the path within the app
+        const key = file.replace(this.pathToApp, '')
+        acc[key] = new Response(f.read(), { headers: { 'Content-Type': f.mimetype } })
+      } catch (error) { this.logger.data({ file, error }).error('static.file.cannot_load') }
+      return acc
+    }, {})
+    return Promise.resolve(this.#routes.static)
   }
+
 
   async namedRouting() {
     pragma.logger.trace('boot.sequence.namedroutes.load.start')
     const _namedroutes = await this.appPathFor('routes', 'named')
     const _this = this
-    const _neoroutes = new NeoArray(_namedroutes).compact.reject((path) => _this.fileExists(path))
-    if (_neoroutes.length === 0) return []
+    const _neoroutes = neo(_namedroutes).compact.filter((path) => _this.fileExists(path))
+    if (_neoroutes.length === 0) return Promise.resolve([])
     const _routes = _neoroutes.map(async (path) => await import(path).then(({ routes }) => routes))
     pragma.logger.data({ namedroutes: _routes }).trace('boot.sequence.namedroutes.load.end')
     this.#routes.defined = await Promise.allSettled(_routes).then((results) => results.map((r) => r.value)).catch(e => [])
+    this.#routes.defined = this.#routes.defined.filter(r => r)
     return this.#routes.defined
   }
   get routes() { return  {...this.#routes } }
@@ -101,8 +113,8 @@ class Freebooter {
     const _this = this
     const result = await Promise.allSettled([
       this.pageRouting(),
-      this.staticRouting(),
-      this.namedRouting()
+      await this.staticRouting(),
+      await this.namedRouting()
     ]).catch(this.logger.error)
     this.logger.data({ result }).trace('boot.sequence.routes.load.end')
   }
