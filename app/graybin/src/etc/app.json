@@ -1,12 +1,26 @@
 {
   "name": "graybin",
-  "port": 7070,
-  "devmode": {
-    "ssl": {
-      "enabled": true,
-      "configuration": "nosh",
-      "useLocalhostCertInDevMode": true
-    }
+  "env": "development",
+  "platform": {
+    "web": {
+      "development": {
+        "ssl": {
+          "enabled": true,
+          "configuration": "nosh",
+          "useLocalhostCert": true
+        },
+        "log": { 
+          "console": {"enabled": true, "level": "debug"},
+          "file": { "enabled": true, "level": "info" }
+        },
+        "server": {
+          "host": "localhost",
+          "port": 3000
+        },
+        "watch":{ "enabled": true, "path": "src" }
+      }
+    },
+    "mobile": { "enabled": false }
   },
   "routes": {
     "prefix": null,
