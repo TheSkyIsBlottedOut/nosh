@@ -25,10 +25,12 @@ export class Logger {
   #config = { ...defaultConfig }
   currentLog = { data: { context: {} } }
   #timing = O_O.obj
+  #lonewolf = true
 
   constructor(appname) {
     this.app = appname
     this.#logs = []
+    this.#lonewolf = true // disable this if you want sigkill to propagate from elsewhere
     this.#config = {}
     this.#timing = { app: +new Date() } // request timing could cause conflicts
     this.currentLog = { data: { context: {} } }
@@ -36,9 +38,17 @@ export class Logger {
   }
 
   initLogger() {
-    ['exit', 'SIGINT', 'SIGTERM'].forEach(event => {
-      process.on(event, async () => await this.writeLogsToFile())
-    })
+    process.on('beforeExit', this.onTerminate.bind(this))
+  }
+
+  set receiveTermSignals(bool) {
+    this.#lonewolf = !bool; return this
+  }
+
+  async onTerminate() {
+    await this.writeLogsToFile()
+    if (this.#lonewolf) process.exit(0)
+    return true;
   }
 
   async writeLogsToFile() {
@@ -135,7 +145,7 @@ export class Logger {
     }
   }
   withRequest(req) {
-    console.log('request headers', Bun.inspect(req.headers))
+    this.withRequestId(req.headers['x-request-id'])
     if (req.headers['x-session-id']) this.withSessionId(req.headers['x-session-id'])
     if (req.headers['x-user-id']) this.withUserId(req.headers['x-user-id'])
     if (req.headers['x-client-id']) this.withClientId(req.headers['x-client-id'])

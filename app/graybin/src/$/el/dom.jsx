@@ -5,9 +5,6 @@ const { page } = config
 const _cfgtitles = page.title ?? page.titles ?? config.name ?? 'nosh app'
 const titles = Array.isArray(_cfgtitles) ? _cfgtitles : [_cfgtitles]
 const titletext = () => titles[Math.random() * titles.length | 0]
-
-
-
 const HTML = ({ children }) => jsx(<>{`<!doctype html>`}<html lang="en">{children}</html></>)
 const Head = ({ children }) => jsx(<head>{children}</head>)
 const Body = ({ children }) => jsx(<body>{children}</body>)
@@ -29,7 +26,7 @@ const ConfiguredHeader = ({ children }) => {
       <Keywords content={page.keywords} />
       <Robots content={page.robots} />
       <Title>{titletext()}</Title>
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" href="/public/img/ico/favicon.ico" />
       {children}
     </head>
   )

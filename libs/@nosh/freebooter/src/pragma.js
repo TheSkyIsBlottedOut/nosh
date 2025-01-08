@@ -24,16 +24,30 @@ const bruteForceRepoRoot = async () => {
 
 
 
-const pragma = {
-  ...Neo,
-  O_O,
-  fn: O_O.fn,
-  up: evolve,
-  uuid: Bun.randomUUIDv7,
-  promisify,
-  repo: async () => await bruteForceRepoRoot(),
-  appname: 'untitled-application',
-  logger: console.log,
-  initLogger() { this.logger = new Logger(this.appname) }
+class Pragma {
+  #appname = 'system'
+  #logger = null
+  constructor() { this.#appname = 'system' }
+  get NeoArray() { return Neo.NeoArray }
+  get NeoObject() { return Neo.NeoObject }
+  get NeoString() { return Neo.NeoString }
+  get NeoNumber() { return Neo.NeoNumber }
+  get Case() { return Neo.Case }
+  get Neo() { return Neo }
+  get O_O() { return O_O }
+  get fn() { return O_O.fn }
+  get up() { return evolve }
+  get uuid() { return Bun.randomUUIDv7 }
+  get promisify() { return promisify }
+  get repo() { return async () => await bruteForceRepoRoot() }
+  set appname(name) { this.#appname = name }
+  get logger() { return this.#logger ??= console.log }
+  initLogger(app) {
+    this.#logger = new Logger(app); this.#appname = app
+  }
+  get appname() { return this.#appname }
 }
+
+const pragma = new Pragma()
+
 export { pragma }

@@ -1,6 +1,8 @@
 import { pragma } from './pragma'
 import { isBot, blockUnsafe } from './botless'
 const { O_O } = pragma
+import React from 'react'
+import { renderToReadableStream } from 'react-dom/server'
 // create helpers for a bun request
 
 /* test string will be something like 'auth_id' or 'auth.id' or 'auth-id-token'.
@@ -128,7 +130,7 @@ class ResponseBuilder {
     return { status: this.#status, message: this.#message, data: this.#data }
   }
 
-  get response() { return new Response.json(this.payload) }
+  get response() { return new Response(JSON.stringify(this.payload), { headers: { 'Content-Type': 'text/json'}}) }
   get end() { return this.response }
 }
 
@@ -160,15 +162,18 @@ const preflightChecks = (req, preflights, idents) => {
 export const bruteForceAppRoot = async (req) => await pragma.repo ? pragma.repo : await pragma.findAppRoot(req) ?? null
 
 const findNoshBin = async (req) => {
+  if (Bun.which('nosh')) return Bun.which('nosh')
   if (!!process.env.Nosh_BinDir) return [process.env.Nosh_BinDir, 'nosh'].join('/')
   const approot = await bruteForceAppRoot(req)
   if (!approot) return null
   return [approot, '.nosh/bin/nosh'].join('/')
 }
 
+const reactRender = async (transitionalelement) => {
+  return new Response( await renderToReadableStream(transitionalelement), { headers: { 'Content-Type': 'text/html' } })
+}
 
 const createHelpers = async (req) => {
-  console.log('[HELPERS] Creating Helpers')
   const identifiers = identify(req)
   const retval = {
     req,
@@ -208,21 +213,38 @@ const handleApiRequest = async (request, requesthandlerdefintion) => {
   return response
 }
 
-const Pages = new Map()
+const layoutfiles = { root: null }
 
-const handleFSRouterRequest = async (request, fsrouter) => {
-  const req = new NeoRequest(request)
-  console.log('[FSROUTER] Handling FS Router request')
+const loadLayout = async (fsrouter) => {
+  if (layoutfiles.root) return layoutfiles.root
+  const layout = fsrouter.match('/layout.jsx')
+  if (!layout) return null
+  const fileLoader = Bun.file(layout.filePath)
+  if (!fileLoader.exists) return null
+  layoutfiles.root = await import(fileLoader.path).then((modules) => modules.default)
+  return layoutfiles.root
+}
+
+const handleFSRouterRequest = async (req, fsrouter) => {
+  const route = fsrouter.match(req.originalRequest)
+  if (!route) return null
+  pragma.logger.data({ route }).trace('fsrouter.route.found')
   const helpers = await createHelpers(req)
-  const uri = req.uri
-  // auth states must be handled internally; we will just pass the helpers along
-  if (!fsrouter.match(req)) return helpers.res.status(401).message('page.not.found').end
-  if (Pages.get(req.path)) {
-    return Pages.get(req.path)(req, helpers)
+  const fileLoader = Bun.file(route.filePath)
+  if (!fileLoader.exists) return helpers.res.status(404).message('not found').response
+  if (route.src) {
+    const handler = await import(route.filePath).then(modules => modules.default)
+    if (typeof handler !== 'function') return helpers.res.status(500).message('internal.server.error').response
+    const result = handler({ helpers, pragma, req, route })
+    console.log(Bun.inspect(result))
+    if (!result) return helpers.res.status(500).message('internal.server.error').response
+    const layout = await loadLayout(fsrouter)
+    if (!layout) layoutfiles.root = Symbol.for('searched')
+    if (layout === Symbol.for('searched') || typeof layout !== 'function') return await reactRender(result)
+    const wrapped = layout({ helpers, pragma, req, route, children: result })
+    return await reactRender(wrapped)
   } else {
-    const page = await fsrouter.getPage(req)
-    Pages.set(req.path, page)
-    return page({ req, helpers, pragma })
+    return new Response(fileLoader.read(), { headers: { 'Content-Type': fileLoader.mimetype } })
   }
 }
 

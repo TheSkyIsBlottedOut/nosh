@@ -1,7 +1,7 @@
-import Neo from 'neoclassical'
 import { pragma } from './pragma'
 import Bun, { $ } from 'bun'
-const { NeoArray, NeoString, NeoObject, NeoNumber } = Neo
+import { watch } from 'fs'
+const { O_O, NeoArray, NeoString, NeoObject, NeoNumber } = pragma
 const neo = (obj) => {
   if (Array.isArray(obj)) return new NeoArray(obj)
   switch (typeof obj) {
@@ -11,29 +11,77 @@ const neo = (obj) => {
     default: return obj
   }
 }
-const { O_O } = pragma
+
 
 class Freebooter {
-  #config = O_O.obj; #paths = O_O.obj; #routes = O_O.obj
+  #config = O_O.obj
+  #paths = O_O.obj
+  #routes = O_O.obj
+  #sys = O_O.obj
+  #env = 'production'
+  #app = 'webservice'
   constructor(config) {
-    console.log('[BOOT] Creating Freebooter')
-    this.#config = { ...config }
-    pragma.initLogger(this.#config.name ?? 'system')
+    this.#config = this.structureConfig(config)
+    this.initLogger()
     this.#paths = { app: config.appRoot }
     this.#routes = {}
-    if (this.#config.logger) pragma.logger.config?.(this.#config.logger)
-    this.logger.info('boot.sequence.initiated')
+    this.#sys = {}
   }
-  get logger() { return pragma.logger }
-  get appName() { return pragma.appname }
+
+  get logger()      { return pragma.logger }
+  get appName()     { return this.#app }
+  get config()      { return this.#config }
+  get webConfig()   { return this.#config.platform.web }
+  get env()         { return this.#env }
+
+  initLogger() {
+    pragma.initLogger(this.config.name ?? 'system')
+    pragma.logger.receiveTermSignals = true
+    pragma.logger.trace('boot.sequence.logger.init')
+    if (this.config.log) pragma.logger.config(this.config.log)
+  }
+
+  structureConfig(oconfig = {}) {
+    let config = Object.assign({}, oconfig)
+    this.#env = config.env ?? 'production'
+    this.#app = oconfig.name ?? 'webservice'
+    config.platform ??= {}
+    Object.keys(config.platform).forEach((key) => {
+      if (config.platform[key]?.[this.#env]) config.platform[key] = config.platform[key][this.#env]
+    })
+    return config
+  }
 
   async discoverFilesystemIfNotSet() {
-    console.log('Filesystem not defined in config, searching...')
+    this.logger.trace('boot.sequence.fsdata.discover.start')
     if (!this.#paths.app) {
       this.#paths.repo = await pragma.repo()
       this.#paths.app = this.#paths.repo + '/app/' + this.appName
     }
     this.logger.data({ paths: this.#paths }).info('boot.sequence.fsdata.discovered')
+  }
+  async initFSWatch() {
+    if (this.#sys.watcher) return Promise.resolve(this.#sys.watcher)
+    this.logger.trace('boot.sequence.fsdata.watch.start')
+    if (typeof this.webConfig.watch === 'object') {
+      const watch_path = [this.pathToApp, this.webConfig.watch.path ?? ''].join('/')
+      const watcher = watch(this.pathToApp, { recursive: true }, (event, filename) => {
+        this.logger.data({ event, filename }).info('fs.watch.reload')
+        this.loadAllRoutes()
+      })
+      this.#sys.watcher = watcher
+      process.on('exit', this.onTerminate)
+      process.on('SIGINT', this.onTerminate)
+      process.on('SIGTERM', this.onTerminate)
+      this.logger.receiveTermSignals = true
+    }
+    return Promise.resolve(this.#sys.watcher)
+  }
+
+  async onTerminate() {
+    await this.#sys.watcher?.close()
+    await pragma.logger.onTerminate()
+    process.exit(0)
   }
 
   get pathToRepo() { this.#paths.repo ??= this.#config.appRoot.split(/\/(?:app|dist)\/?/)[0]; return this.#paths.repo }
@@ -67,7 +115,7 @@ class Freebooter {
     return (await $`find ${dir} -type f`.text()).split(/\n/).filter(f => f.length > 0 && /\w/.test(f))
   }
 
-  async staticFiles(dir) {
+  async staticFiles(dir) { // may be replaceable by fsrouting - see bun docs on assets
     const _ptrlst = neo(this.appPathFor('static', 'paths'))
     if (_ptrlst.length === 0) return Promise.resolve([])
     const _paths = _ptrlst.map(async (path) => await this.allFilesInPath(path))
@@ -114,6 +162,7 @@ class Freebooter {
     const result = await Promise.allSettled([
       this.pageRouting(),
       await this.staticRouting(),
+      await this.initFSWatch(),
       await this.namedRouting()
     ]).catch(this.logger.error)
     this.logger.data({ result }).trace('boot.sequence.routes.load.end')
