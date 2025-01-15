@@ -1,4 +1,9 @@
-# Nosh
+# Nosh - A Lightweight Framework for Almost Everything
+
+This repo is a sample application used for the development of the Nosh framework. The application is hosted in the /app folder; 
+
+
+
 
 ## Sample Branch - A small web app for encrypted pastes
 

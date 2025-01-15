@@ -1,16 +1,18 @@
 {
   "name": "nokv",
-  "description": "Nosh's wrapper for lmmdb. Which is the fastest of the pure on-disk kvstores.",
+  "description": "LMDB bindings for nosh on bun.",
   "main": "index.js",
   "type": "module",
   "private": false,
-  "keywords": ["kvstore", "nosh", "bun", "lmdb"],
+  "keywords": ["lmdb", "nosh", "bun"],
   "version": "0.0.1",
-  "license": "inherit",
   "engines": {
     "bun": ">=1.1.38", "node": ">=16.0.0"
   },
   "dependencies": {
     "lmdb": "^0.0.1"
+    "neoclassical": "workspace:libs/@nosh/neoclassical@*",
+    "freebooter": "workspace:libs/@nosh/freebooter@*"
   }
+
 }

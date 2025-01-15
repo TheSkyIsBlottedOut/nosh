@@ -4,6 +4,7 @@
 #  &... however, nosh also adds support for LMDB.
 #  &usage: nosh sanity:lmdb
 
-[[ -z "$(which lmdb)" ]] && nosh sanity:install lmdb
+#TODO:  lmdb does not install an executable, 'which' doesn't work
+nosh sys:install lmdb || exit 1
 nosh sys:module lmdb
 exit 0

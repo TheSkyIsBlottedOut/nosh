@@ -1,57 +1,57 @@
 import { pragma } from './pragma'
-
-const botmatchers = new pragma.NeoObject({
-  dont_be_google: /google|Ads/, // Googlebot
+const { NeoNumber, NeoObject } = pragma
+const botmatchers = new NeoObject({
+  dont_be_google: /google|Ads/i, // Googlebot
   microsoft_ip_thievery_engine: /bingbot/i, // Bingbot
-  openweb_fuckers: /OpenWeb/i, // OpenWeb
-  ip_thevery_gpt: /GPT/i, // OpenAI
+  openweb_annoyance: /OpenWeb/i, // OpenWeb
+  intellectual_property_thievery_gpt: /GPT/i, // OpenAI
   search_engine_pointless_everywhere_but_japan: /slurp/i, // Yahoo! Slurp
   bugman_chinkspider: /baidu/i, // Baidu
   ex_russian_serbian_spiderbot: /yandex/i, // Yandex
   microsoft_pretending_to_be_anonymous_bot: /duckduck/i, // DuckDuckGo
   zuccbot: /facebookexternal/i, // Facebook
   elonbot: /twitter/i, // Twitter
-  sunnyvale_jobfucking_engine_bot: /linkedin/i, // LinkedIn
+  sunnyvale_recruiting_monopoly_bot: /linkedin/i, // LinkedIn
   local_social_mobile_bot: /pinterest/i, // Pinterest
-  faggotbot: /slackbot/i, // Slack
-  jira_fuckers: /Jira/i, // Jira
+  atlassian_content_embed: /slackbot/i, // Slack
+  jira_content_embed: /Jira/i, // Jira
   telegrambot: /telegrambot/i, // Telegram
   applebot: /applebot/i, // Apple
   whats_facebook_in_disguise_bot: /whatsapp/i, // WhatsApp
   skypebot: /skypeuripreview/i, // Skype
-  chink_survival_bot: /line/i, // LINE
-  discord_janny_trannybot: /discordbot/i, // Discord
+  cashapp_with_chinese_characteristics: /line/i, // LINE
+  discord_jannybot: /discordbot/i, // Discord
   zoombot: /zoominfo/i, // Zoom
   genericbot: /bot|crawl|spider/i, // Generic bots
   internet_dick_measurer: /InternetMeasurement/,
-  democrat_archive: /archive/i,
+  dc_politician_archive: /archive/i,
   ahrefs: /Ahrefs/i,
-  retards_at_mj12: /MJ12/,
-  cen_syster_fuckers: /CensysInspect/i,
+  best_minds_at_mj12: /MJ12/,
+  cen_syster_marriage: /CensysInspect/i,
   zerg_rush: /SemrushBot/i,
   loic: /lo(?:w.*orbita?l?.*)i(?:on\s*)cannon/i,
-  hello_fuck_off: /Hello\s+World/i,
-  this_faggot: /Chrome\/81\.0\.4044\.129/,
-  retarded_serbs: /xfa1\,nvdorz\.nvd0rz/i,
+  hello_go_away: /Hello\s+World/i,
+  this_psycho: /Chrome\/81\.0\.4044\.129/,
+  gavrilo_princip: /xfa1\,nvdorz\.nvd0rz/i,
   no_useragent: /^$/,
-  faggot_in_basement: /Custom-AsyncHttpClient/,
+  dude_in_basement: /Custom-AsyncHttpClient/,
   palo_alto_networks: /scaninfo/,
-  vikingfags: /SM-T\d+\s*Build\/KOT/,
-  obvious_chinafags: /zh\-CN/i,
-  obvious_russiafags: /ru\-RU/i,
+  vikingposters: /SM-T\d+\s*Build\/KOT/,
+  obvious_chinaposters: /zh\-CN/i,
+  obvious_russiaposters: /ru\-RU/i,
   practice_pyscrape_elsewhere: /python\-requests/,
   edgelords: /Edg\/\d+/,
-  wow_fuck_off: /WOW64/,
+  wow_no_thanks: /WOW64/,
   chinese_hack_factory: /Infinix\s*X\w+\s*Build/,
   hurr_durr_huehue: /hu\;\s*rv/,
   chinese_cyberattack: /[\x00 - \x08\x0E - \x1F\x7F]/,
   chinese_cyberattack2: /[\x80 - \xFF]/,
-  pla_army_faggots: /^[\x16][\x03][\x01 ]/, // ching chong go home
+  peoples_liberation_army: /^[\x16][\x03][\x01 ]/, // ching chong go home
   yuropoors: /[\xC0-\xFF]/i,
 })
 
 
-const suspect_uris = new pragma.NeoObject({
+const suspect_uris = new NeoObject({
   envfile_varset_thieves: /\.env\w*$/,
   zoo_escape_attempt: /\/?(\.{2}\/)+/, // index.php?lang=../../..
   php_autoprepend_fuckery: /auto_prepend_file.*php.+input/,
@@ -68,23 +68,23 @@ const suspect_uris = new pragma.NeoObject({
   party_like_its_1999: /phpinfo/,
   not_creative: /\/remote\W*login/,
   when_will_they_ever_learn: /\/de(?:ploy|liver|pendenc|fault|veloper)\w*\/\./,
-  fuck_off_chinkbots: /^(\\x[a-f0-9]{2}){3,21}/,
-  kys_comintern_faggots: /\x918\s*\xF4_kr\xC9\]/,
+  chinese_bots: /^(\\x[a-f0-9]{2}){3,21}/,
+  ccp_leet_hackers: /\x918\s*\xF4_kr\xC9\]/,
 });
 
 
-const error_code_pairs = new pragma.NeoObject({
+const error_code_pairs = new NeoObject({
   payment_required: 402,
   slow_the_fuck_down: 420,
   back_to_the_shortbus: 406,
   this_is_war: 409,
   you_win___psych: 410,
-  micropeen: 411,
+  so_tiny: 411,
   i_expected_better: 417,
-  you_are_legally_retarded: 451,
+  you_have_a_legally_recognized_disability: 451,
   its_on_fire: 218,
   too_hot_for_windows_98: 450,
-  no_really_fuck_you: 299,
+  gfy: 299,
 });
 
 
@@ -93,14 +93,12 @@ const botMatches = (req) => {
   return matchers.filter((k, v) => (v.test(ua) ? k : null)).compact; // type narray
 };
 
-const isBot = (req) => {
-  botMatches(req).length > 0;
-};
+const isBot = (req) =>  botMatches(req).length > 0
 const unsafeRequestProbability = (req) => {
   const uri = enlist(req.protocol, "://", req.get("host"), req.originalUrl).join;
   const suspicious = enlist(suspect_uris.filter((k, v) => v.test(uri)).keys);
   // one match is suspicious, more is very suspect_uris
-  return new pragma.NeoNumber(suspicious.length ** 2).sigmoid;
+  return new NeoNumber(suspicious.length ** 2).sigmoid;
 };
 
 const blockUnsafe = (req) => {
