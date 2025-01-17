@@ -73,4 +73,4 @@ just more inescapable?
 
 
 I may not succeed;
-  but if I can, I will murder the browser.
+  but if I can, I will bring some level of sensibility back from an overtracked, over-networked internet.
