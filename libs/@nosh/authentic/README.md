@@ -1,4 +1,4 @@
-# nosh - Anonymous
+# nosh - Authentic
 
 This is the authentication library for nosh. It is designed to manage several use cases:
 
@@ -21,4 +21,4 @@ This is the authentication library for nosh. It is designed to manage several us
 
 ## Technical Details
 
-Anonymous uses scrypt for password hashing, stored in a standard RDBMS.
+Authentic uses scrypt for password hashing, stored in a standard RDBMS.

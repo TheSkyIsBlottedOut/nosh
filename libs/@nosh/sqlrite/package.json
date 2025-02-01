@@ -1,0 +1,20 @@
+{
+  "name": "@nosh/sqlrite",
+  "description": "A SQL parser and query builder for nosh on bun.",
+  "main": "index.ts",
+  "type": "module",
+  "private": false,
+  "keywords": ["sql", "nosh", "bun"],
+  "version": "0.0.1",
+  "engines": {
+    "bun": ">=1.1.38"
+  },
+  "dependencies": {
+    "neoclassical": "workspace:libs/@nosh/neoclassical@*",
+    "freebooter": "workspace:libs/@nosh/freebooter@*"
+  },
+  "devDependencies": {
+    "bun": "^1.1.38",
+    "bun:sqlite": "^1.1.38"
+  }
+}

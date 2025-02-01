@@ -97,7 +97,9 @@ O_O.ObjWithDefault = class extends Object {
 
 O_O.fn.dissectUrl = (url) => {
   if (typeof url !== 'string') return { host: 'localhost', protocol: 'http' }
-  const { host, protocol, port, hashmark, path, querystring } = url.match(/^(?<protocol>https?)?\:\/\/(?<host>[^\/]+)(\:(?<port>\d+))?(?<path>\/[^\?]+)?(\?(?<querystring>[^\#]+))?(#(?<hashmark>[^\s]+))?/).groups
+  const grouped_data = url.match(/^(?<protocol>https?)?\:\/\/(?<host>[^\/]+)(\:(?<port>\d+))?(?<path>\/[^\?]+)?(\?(?<querystring>[^\#]+))?(#(?<hashmark>[^\s]+))?/)?.groups
+  if (!grouped_data) return { host: 'localhost', protocol: 'http' }
+  const { host, protocol, port, hashmark, path, querystring } = grouped_data
   return { host, protocol, port, path, querystring, hashmark }
 }
 
