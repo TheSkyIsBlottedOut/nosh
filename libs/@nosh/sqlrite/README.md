@@ -1,7 +1,16 @@
 # Sqlrite
 
-Goal: Use tag functions  https://codeburst.io/javascript-what-are-tag-functions-97682f29521b
-To do js like the postgres gem:
-https://www.npmjs.com/package/postgres
+A utility wrapper around bun's SQLite [utility](https://bun.sh/docs/api/sqlite)
 
-except with bun's built in sql class: https://bun.sh/docs/api/sqlite
+Uses [tag functions](https://codeburst.io/javascript-what-are-tag-functions-97682f29521b) as the npm [postgres](https://www.npmjs.com/package/postgres) package does.
+
+
+## Usage
+
+```typescript
+import { SQLRite } from '@nosh/sqlrite'
+const {$} = new SQLRite({ dbfile: 'myapp.db' }) // app-level data folder; use absolute path to override
+
+$(`SELECT * FROM users WHERE email = ${ 'email@example.com' }`)
+```
+
