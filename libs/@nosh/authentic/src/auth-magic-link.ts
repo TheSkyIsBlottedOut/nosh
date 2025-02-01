@@ -25,7 +25,7 @@ const MagicLinkAuthenticator = (authentic_instance: Authentic) => {
   }
   const { $ } = new SQLRite({ dbfile: authentic_instance.config.db })
 
-  ator.send = async (email: string) => {
+  ator.generate = async (email: string) => {
     // generate a magic link
     if (!email) throw new MagicLinkError('No email provided.')
     if (!validateConfig()) return false
@@ -40,13 +40,30 @@ const MagicLinkAuthenticator = (authentic_instance: Authentic) => {
     return magicLink
   }
 
-  ator.verify = async (magicLink: string) => {
+  ator.clearAllExpired = async () => {
+    // clear all expired magic links
+    if (!validateConfig()) return false
+    await $(`DELETE FROM ${authentic_instance.config.auth.table} WHERE ${authentic_instance.config.auth.magic_expiry_column} < ${new Date()}`)
+    return true
+  }
+
+  ator.clear = async (email: string) => {
+    // clear a magic link
+    if (!email) throw new MagicLinkError('No email provided.')
+    if (!validateConfig()) return false
+    await $(`UPDATE ${authentic_instance.config.auth.table} SET ${authentic_instance.config.auth.magic_column} = NULL WHERE ${authentic_instance.config.auth.email_column} = ${email}`)
+    return true
+  }
+
+  ator.auth = async (magicLink: string) => {
     // verify the magic link
     if (!magicLink) throw new MagicLinkError('No magic link provided.')
-    if (!validateConfig()) return false
-    const user = $(`SELECT * FROM ${authentic_instance.config.auth.table} WHERE ${authentic_instance.config.auth.magic_column} = ${magicLink}`)
-    if (!user) return false
-    return user[authentic_instance.config.auth.magic_column] === magicLink
+    if (magicLink.length !== 36) throw new MagicLinkError('Invalid magic link.')
+    if (!validateConfig()) return null
+    const user = $(`SELECT * FROM ${authentic_instance.config.auth.table} WHERE ${authentic_instance.config.auth.magic_column} = ${magicLink} LIMIT 1`)
+    if (!user) return null
+    await ator.clear(user[authentic_instance.config.auth.email_column])
+    return user
   }
   return ator
 }

@@ -47,16 +47,16 @@ const PasswordAuthenticator = (authentic_instance: Authentic) => {
     return true
   }
 
-  ator.verify = async (email: string, password: string) => {
+  ator.auth = async (email: string, password: string) => {
     // verify the password
     if (!email) throw new PasswordError('No email provided.')
     if (!password) throw new PasswordError('No password provided.')
     if (!validateConfig()) return false
     if (config.auth.salt) password = `${password}${config.auth.salt}`
     const user = $(`SELECT * FROM ${config.auth.table} WHERE ${config.auth.email_column} = ${email}`)
-    if (!user) return false
+    if (!user) return null
     const hash = await scrypt(password, config.auth.hashing_options)
-    return user[config.auth.password_column] === hash.toString('hex')
+    return user[config.auth.password_column] === hash.toString('hex') ? user : null
   }
 
 }

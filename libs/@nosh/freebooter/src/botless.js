@@ -46,7 +46,7 @@ const botmatchers = new NeoObject({
   hurr_durr_huehue: /hu\;\s*rv/,
   chinese_cyberattack: /[\x00 - \x08\x0E - \x1F\x7F]/,
   chinese_cyberattack2: /[\x80 - \xFF]/,
-  peoples_liberation_army: /^[\x16][\x03][\x01 ]/, // ching chong go home
+  peoples_liberation_army: /^[\x16][\x03][\x01 ]/,
   yuropoors: /[\xC0-\xFF]/i,
 })
 
@@ -64,7 +64,7 @@ const suspect_uris = new NeoObject({
   function_passing: /function\=/,
   fresh_out_of_box: /sample\.env/,
   env_expnsion: /\.env\.\w+/,
-  dotfile_faggots: /\.[\w\-\/\\]+/,
+  dotfile_script_kiddays: /\.[\w\-\/\\]+/,
   party_like_its_1999: /phpinfo/,
   not_creative: /\/remote\W*login/,
   when_will_they_ever_learn: /\/de(?:ploy|liver|pendenc|fault|veloper)\w*\/\./,
