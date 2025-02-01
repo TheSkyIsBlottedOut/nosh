@@ -1,6 +1,8 @@
 // define backtick functions
 import { O_O } from '@nosh/unhelpfully'
-import { Database } from "bun:sqlite";
+// @ts-expect-error - no types for bun:sqlite
+import { Database } from 'bun:sqlite'
+
 // Class for encapsulation of SQLRite functionality.
 
 class SQLRite {
