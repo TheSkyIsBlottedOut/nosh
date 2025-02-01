@@ -9,9 +9,20 @@ Uses [tag functions](https://codeburst.io/javascript-what-are-tag-functions-9768
 
 ```typescript
 import { SQLRite } from '@nosh/sqlrite'
-const {$} = new SQLRite({ dbfile: 'myapp.db' }) // app-level data folder; use absolute path to override
+// app-level data folder; use absolute path to override
+const { $ } = new SQLRite({ dbfile: 'myapp.db' })
 
 // replace this string interpolation with a variable!
 $(`SELECT * FROM users WHERE email = ${ 'email@example.com' }`)
 ```
 
+## Long Term Roadmap
+
+- Combined/Unified tooling/ORM exposure
+- ActiveRecord style accessors
+- Utility classes (check the SQLRite instance's schema method)
+
+```typescript
+const sqlrite = new SQLRite({ dbfile: 'myapp.db' })
+// load table schemas
+console.log(sqlrite.schema)
