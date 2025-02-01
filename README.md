@@ -1,9 +1,12 @@
 # Nosh - A Lightweight Framework for Almost Everything
 
 This repo is a sample application used for the development of the Nosh framework. The application is hosted in the /app folder; 
+There are lots of tools in the @nosh namespace:
 
-
-
+- [unhelpfully](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/unhelpfully): A toolkit for common functions;
+- [freebooter](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/freebooter): The nosh bootloader, with lots of neat features;
+- [sqlrite](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/sqlrite): SQLite (from bun) wrapped in backtick functions;
+- [logn](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/logn) The core logger;
 
 ## Sample Branch - A small web app for encrypted pastes
 
@@ -45,32 +48,4 @@ In the first half of 2024, I found myself migrating a company's Preact/Express s
 Nx/Next.js. I found myself very impressed with Nx - not quite so much with Next. After
 discovering Deno and Bun, I've decided to build my next toolkit in Bun, conforming to
 browser standards (for which react has "workarounds"), as many home-grown, no-spyware
-tools as possible, and build an ecosystem which moves the world towards what I like to call
-
-## The better Web3
-
-- Every day I open up a browser
-- And I do a google search
-- And every page I visit gathers metrics on me
-- And *threatens* me when I write scripts that shut them all down.
-
-Ideally, distributed DNS becomes an option;
-*	Individual works (songs, artwork, nfts, plugins, software) are all created individually;
-* Those whose skill lies in curating and discovering wonderful things can find these
-*	Because every creator is also a broadcaster
-* Every curator is like an interior designer
-
-
-Doesn't it seem like those days when you could buy "six albums for 1 cent" just
-to be stuck in a contract with one of the big recording studios is back again,
-just more inescapable?
-
-
-
-* We add aria tags to browsers to extend our XML based systems towards the multisensory experience the internet will one day become;
-* The browser is window shopping.
-* Visiting a site and seeing endless ads for something you saw is intrusive and unwanted.
-
-
-I may not succeed;
-  but if I can, I will bring some level of sensibility back from an overtracked, over-networked internet.
+tools as possible, and rebuild trust.
