@@ -6,15 +6,12 @@
   "private": false,
   "keywords": ["sql", "nosh", "bun"],
   "version": "0.0.1",
-  "engines": {
-    "bun": ">=1.1.38"
-  },
+  "engines": { "bun": ">=1.1.38" },
   "dependencies": {
-    "neoclassical": "workspace:libs/@nosh/neoclassical@*",
-    "freebooter": "workspace:libs/@nosh/freebooter@*"
+    "unhelpfully": "workspace:libs/@nosh/unhelpfully@*"
   },
   "devDependencies": {
     "bun": "^1.1.38",
-    "bun:sqlite": "^1.1.38"
+    "testcase": "workspace:libs/@nosh/testcase@*"
   }
 }

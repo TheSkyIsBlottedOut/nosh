@@ -13,7 +13,7 @@ import { SQLRite } from '@nosh/sqlrite'
 const { $ } = new SQLRite({ dbfile: 'myapp.db' })
 
 // replace this string interpolation with a variable!
-$(`SELECT * FROM users WHERE email = ${ 'email@example.com' }`)
+results = await $(`SELECT * FROM users WHERE email = ${ 'email@example.com' }`)
 ```
 
 ## Long Term Roadmap

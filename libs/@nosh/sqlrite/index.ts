@@ -21,17 +21,16 @@ SQLRiteProcessQueue.fn.awaitUnlock = (database: string) => {
 SQLRiteProcessQueue.fn.awaitUnlockAll = () => {
   return new Promise<void>((resolve) => {
     const interval = setInterval(() => {
-      if (!Object.values(SQLRiteProcessQueue.databases).some((db: { semaphore: { locked: boolean } }) => db.semaphore.locked)) {
-        clearInterval(interval); resolve()
-      }
+      if (!Object.values(SQLRiteProcessQueue.databases).some((db: any) => (db as SQLRiteDatabase).semaphore.locked)) { clearInterval(interval); resolve() }
+      clearInterval(interval); resolve()
     }, 100)
   })
 }
+SQLRiteProcessQueue.exitEvents = ['exit', 'SIGINT', 'SIGKILL', 'SIGTERM']
 SQLRiteProcessQueue.fn.safetyMeasures = () => {
   if (SQLRiteProcessQueue._safety_measures) return;
   setInterval(() => { SQLRiteProcessQueue.fn.tick() }, 100)
-  process.on('exit', () => { SQLRiteProcessQueue.fn.killConnections() })
-  process.on('SIGINT', () => { SQLRiteProcessQueue.fn.killConnections() })
+  SQLRiteProcessQueue.exitEvents.forEach((signal) => { process.on(signal, () => { SQLRiteProcessQueue.fn.clearQueue() }) })
   SQLRiteProcessQueue._safety_measures = true;
 }
 
@@ -40,12 +39,12 @@ class SQLRite {
   _config: { dbfile?: string; };
   constructor(conf = {}) { this._config = conf; }
   get name() { return this.config.dbfile ?? ':memory:' }
-  get config() { return this._config; }
+  get config() { return this._config ?? {} }
   get cnx() { SQLRiteProcessQueue.fn.safetyMeasures(); return SQLRiteProcessQueue.databases[this.name] }
   async initConnection() {
     if (!SQLRiteProcessQueue.databases[this.name].connection) {
       SQLRiteProcessQueue.databases[this.name].connection = new Database(this.name);
-      Promise.all([this.schema, this.indexes(this.name), this.columns(this.name)]).catch(e => { throw new SQLRiteError(e) }).then(([schema_, indexes_, columns_]) => {
+      Promise.all([this.schema, this.indexes(), this.columns()]).catch(e => { throw new SQLRiteError(e) }).then(([schema_, indexes_, columns_]) => {
         SQLRiteProcessQueue.databases[this.name].schema = schema_;
         SQLRiteProcessQueue.databases[this.name].indexes = indexes_;
         SQLRiteProcessQueue.databases[this.name].columns = columns_;
@@ -62,46 +61,42 @@ class SQLRite {
     return await SQLRiteProcessQueue.fn.queuedPromise(this.name, sql, ...params)
   }
 
-  get schema() { return this.$('SELECT * FROM sqlite_master WHERE type = "table"') }
-  indexes(table: string) { return this.$(`PRAGMA index_list(${table})`) }
-  columns(table: string) { return this.$(`PRAGMA table_info(${table})`) }
-  drop(table: string) { return this.$(`DROP TABLE ${table}`) }
-  truncate(table: string) { return this.$(`DELETE FROM ${table}`) }
-  insert(table: string, data: { [key: string]: any }) {
+  async freshSchema() { return await this.$('SELECT * FROM sqlite_master WHERE type = "table"') }
+  async freshIndexes() { return await this.$('SELECT * FROM sqlite_master WHERE type = "index"') }
+  async freshColumns() { return await this.$('PRAGMA table_info()') }
+  async schema() { return SQLRiteProcessQueue.databases[this.name].schema ?? this.freshSchema() }
+  async indexes() { return SQLRiteProcessQueue.databases[this.name].indexes ?? this.freshIndexes() }
+  async columns() { return SQLRiteProcessQueue.databases[this.name].columns ?? this.freshColumns() }
+  async drop() { return await this.$('DROP TABLE') }
+  async truncate() { return await this.$('DELETE FROM') }
+  async insert(data: { [key: string]: any }) {
     const keys = Object.keys(data).join(', '), values = Object.values(data).map(() => '?').join(', ');
-    return this.$(`INSERT INTO ${table} (${keys}) VALUES (${values})`, ...Object.values(data));
+    return await this.$(`INSERT INTO (${keys}) VALUES (${values})`, ...Object.values(data));
   }
-  select(table: string, where: { [key: string]: any }) {
+  async select(table: string, where: { [key: string]: any }) {
     const keys = Object.keys(where).join(' = ? AND ');
     return this.$(`SELECT * FROM ${table} WHERE ${keys} = ?`, ...Object.values(where));
   }
-  count(table: string, where?: { [key: string]: any }) { return this.$(`SELECT COUNT(*) FROM ${table}${where ? ` WHERE ${Object.keys(where).join(' = ? AND ')} = ?` : ''}`, ...(where ? Object.values(where) : [])) }
-  update(table: string, where: { [key: string]: any }, data: { [key: string]: any }) {
+  async count(table: string, where?: { [key: string]: any }) { return this.$(`SELECT COUNT(*) FROM ${table}${where ? ` WHERE ${Object.keys(where).join(' = ? AND ')} = ?` : ''}`, ...(where ? Object.values(where) : [])) }
+  async update(table: string, where: { [key: string]: any }, data: { [key: string]: any }) {
     const keys = Object.keys(data).join(' = ?, '); return this.$(`UPDATE ${table} SET ${keys} = ? WHERE ${Object.keys(where).join(' = ? AND ')} = ?`, ...[...Object.values(data), ...Object.values(where)]);
   }
-  delete(table: string, where: { [key: string]: any }) { return this.$(`DELETE FROM ${table} WHERE ${Object.keys(where).join(' = ? AND ')} = ?`, ...Object.values(where)) }
-  createTable(table: string, schema: { [key: string]: string }) {
+  async delete(table: string, where: { [key: string]: any }) { return this.$(`DELETE FROM ${table} WHERE ${Object.keys(where).join(' = ? AND ')} = ?`, ...Object.values(where)) }
+  async createTable(table: string, schema: { [key: string]: string }) {
     const keys = Object.keys(schema).map(k => `${k} ${schema[k]}`).join(', ');
     return this.$(`CREATE TABLE ${table} (${keys})`);
   }
-  createIndex(table: string, index: string, columns: string[]) {
-    return this.$(`CREATE INDEX ${index} ON ${table} (${columns.join(', ')})`);
-  }
-  dropIndex(table: string, index: string) { return this.$(`DROP INDEX ${index}`) }
-  dropTable(table: string) { return this.$(`DROP TABLE ${table}`) }
-  search(table: string, search_column: string, search_term: string) { return this.$(`SELECT * FROM ${table} WHERE ${search_column} LIKE ?`, `%${search_term}%`) }
-  addFullTextIndex(table: string, columns: string[]) { return this.$(`CREATE VIRTUAL TABLE ${table}_search USING FTS4(${columns.join(', ')})`) }
-  searchFullText(table: string, search_term: string) { return this.$(`SELECT * FROM ${table}_search WHERE ${table}_search MATCH ?`, search_term) }
-  get tables() { return this.schema.map((s: { name: string }) => s.name) }
-  get table() { return this.tables }
+  async createIndex(table: string, index: string, columns: string[]) { return this.$(`CREATE INDEX ${index} ON ${table} (${columns.join(', ')})`) }
+  async dropIndex(table: string, index: string) { return this.$(`DROP INDEX ${index}`) }
+  async dropTable(table: string) { return this.$(`DROP TABLE ${table}`) }
+  async search(table: string, search_column: string, search_term: string) { return this.$(`SELECT * FROM ${table} WHERE ${search_column} LIKE ?`, `%${search_term}%`) }
+  async addFullTextIndex(table: string, columns: string[]) { return this.$(`CREATE VIRTUAL TABLE ${table}_search USING FTS4(${columns.join(', ')})`) }
+  async searchFullText(table: string, search_term: string) { return this.$(`SELECT * FROM ${table}_search WHERE ${table}_search MATCH ?`, search_term) }
+  async tables() { return await this.schema().then((schema) => schema.map((s: any) => s.name)) }
+  async tableInfo(table: string) { return await this.$(`PRAGMA table_info(${table})`) }
+  static async initDatabases(dbs: string[]) { return await SQLRiteProcessQueue.fn.awaitUnlockAll().then(() => { SQLRite.connectToDatabases(dbs) }) }
 }
 
-async function startDatabases(...dbs: string[]) {
-  SQLRite.connectToDatabases(dbs)
-  await SQLRiteProcessQueue.fn.awaitUnlockAll()
-}
 
-export { SQLRite, SQLRiteProcessQueue, startDatabases };
-export type { SQLRiteSemaphore, SQLRiteDatabase, SQLRiteQueueItem };
-
-
+export { SQLRite, SQLRiteProcessQueue, SQLRiteError }
+export type { SQLRiteSemaphore, SQLRiteDatabase, SQLRiteQueueItem }

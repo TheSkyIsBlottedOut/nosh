@@ -1,0 +1,14 @@
+{
+  "name": "@nosh/testcase",
+  "description": "A test case for nosh on bun.",
+  "main": "index.ts",
+  "type": "module",
+  "private": false,
+  "keywords": ["test", "nosh", "bun"],
+  "version": "0.0.1",
+  "engines": { "bun": ">=1.1.38" },
+  "dependencies": {
+    "unhelpfully": "workspace:libs/@nosh/unhelpfully@*",
+    "logn": "workspace:libs/@nosh/logn@*"
+  }
+}
