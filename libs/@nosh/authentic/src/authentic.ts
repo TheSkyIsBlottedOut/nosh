@@ -1,6 +1,7 @@
 // Wrapper module. Exposes configuration loader and provides an interface for auth.
 import { MagicLinkAuthenticator } from './auth-magic-link'
 import { PasswordAuthenticator } from './auth-password'
+import { createUserTable } from './util-create-user-table'
 // @ts-expect-error - no types for bun:uuid
 import { randomUUIDv7 } from 'bun'
 
@@ -18,6 +19,11 @@ class Authentic {
   set utils(ut) { this._utils = ut }
   get utils() { return this._utils }
   get ators() { return this._utils }
+  static migrations() {
+    return {
+      createUserTable
+    }
+  }
 }
 
 export { Authentic }

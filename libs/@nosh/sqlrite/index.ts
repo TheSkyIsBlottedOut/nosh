@@ -34,8 +34,7 @@ SQLRiteProcessQueue.fn.safetyMeasures = () => {
   SQLRiteProcessQueue._safety_measures = true;
 }
 
-
-class SQLRite {
+class SQLRite {x
   _config: { dbfile?: string; };
   constructor(conf = {}) { this._config = conf; }
   get name() { return this.config.dbfile ?? ':memory:' }
