@@ -2,7 +2,7 @@
 import { O_O } from '@nosh/unhelpfully'
 // @ts-expect-error - no types for bun:sqlite
 import { Database } from 'bun:sqlite'
-class SQLRiteError extends Error { constructor(message: string) { super(message); this.name = 'SQLRiteError' } }
+class SQLRiteError extends Error { constructor(message: string) { super(message); this.name = 'SQLRiteError' }; toString() { `[${this.name}] ${this.message}` } }
 type SQLRiteQueueItem = { db: string, sql: string, params: any[], fn: () => any }
 // Class for encapsulation of SQLRite functionality.
 type SQLRiteSemaphore = { locked: boolean, lock: () => void, unlock: () => void }
@@ -42,7 +42,8 @@ class SQLRite {
   get config() { return this._config ?? {} }
   get cnx() { SQLRiteProcessQueue.fn.safetyMeasures(); return SQLRiteProcessQueue.databases[this.name] }
   async initConnection() {
-    if (!SQLRiteProcessQueue.databases[this.name].connection) {
+    if (!SQLRiteProcessQueue.databases?.[this.name]) SQLRiteProcessQueue.databases[this.name] = { connection: null, name: this.name, schema: {}, indexes: [], columns: [], semaphore: { locked: false, lock: () => { }, unlock: () => { } } }
+    if (!SQLRiteProcessQueue.databases?.[this.name]?.connection) {
       SQLRiteProcessQueue.databases[this.name].connection = new Database(this.name);
       Promise.all([this.schema, this.indexes(), this.columns()]).catch(e => { throw new SQLRiteError(e) }).then(([schema_, indexes_, columns_]) => {
         SQLRiteProcessQueue.databases[this.name].schema = schema_;

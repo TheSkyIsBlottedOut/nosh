@@ -25,3 +25,13 @@ SQLRiteTest.select = async () => {
   const row = await db.select('test', { id: 1 })
   return util.isEqual(row, { id: 1, name: 'test' })
 }
+
+SQLRiteTest.count = async () => {
+  const db = new SQLRite({ dbfile: ':memory:' })
+  await db.$('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT)')
+  await db.insert({ name: 'test' })
+  const count = await db.count('test')
+  return util.isEqual(count, 1)
+}
+
+test(SQLRiteTest)

@@ -122,6 +122,7 @@ export class Logger {
     let format = this.#config.console?.format
     if (typeof format === 'string') {
       const logdata = { app: this.appName, time: new Date().toISOString(), level: this.currentLog.level, msg: this.currentLog.msg, data: this.currentLog.data }
+      if (Object.keys(logdata.data.context).length === 0) logdata.data.context = ''
       const output = O_O.interpolate(format, logdata)
       Bun.write(Bun.stdout, output + '\n')
     } else {
@@ -177,3 +178,4 @@ export class Logger {
   }
 }
 
+export const logn = (appname) => new Logger(appname)

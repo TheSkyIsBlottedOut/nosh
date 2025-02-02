@@ -3,11 +3,11 @@
 */
 
 import { O_O } from '@nosh/unhelpfully'
-import { Logger } from '@nosh/logn'
+import { logn } from '@nosh/logn'
 
 
 export const test = (testcases: Record<string, () => void>) => {
-  const logger = new Logger({ name: 'testcase' })
+  const logger = logn('-^testcase^-')
   const results = O_O.obj
   const run = async () => {
     for (const [name, testcase] of Object.entries(testcases)) {
@@ -39,7 +39,7 @@ util.isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
 util.isNotEqual = (a: any, b: any) => JSON.stringify(a) !== JSON.stringify(b)
 util.isTruthy = (a: any) => !!a
 util.isFalsy = (a: any) => !a
-util.isUndefined = (a: any) => typeof a === 'undefined'
+util.isUndefined = (a: any) => util.isType(a, 'undefined')
 util.isNull = (a: any) => a === null
 util.isNotNull = (a: any) => a !== null
 util.isType = (a: any, b: any) => typeof a === b
@@ -63,6 +63,6 @@ util.test = (name: string, fn: () => false | null) => {
   return true
 }
   
-const sampletest = util.test('sample test', () => util.isNotNull(util))
-test({ sampletest })
+// const sampletest = util.test('sample test', () => util.isNotNull(util))
+// test({ sampletest })
 export { util }
