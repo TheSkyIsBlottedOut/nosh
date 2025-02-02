@@ -12,5 +12,6 @@
     "**/.nosh/etc/.*": false,
   },
   "editor.inlineCompletionsAccessibilityVerbose": true,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "editor.quickSuggestions": false
 }

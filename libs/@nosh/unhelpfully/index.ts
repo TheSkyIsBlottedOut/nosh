@@ -14,11 +14,10 @@ O_O.add = (key) =>{ return { to: (obj) => {
   }
 }
 }}
-O_O.add('obj').to(O_O.fn).method((x=null) => Object.create(x))
-O_O.add('obj').to(O_O).get(()=>Object.create(null))
+O_O.add('obj').to(O_O).get(() => Object.create(null))
 O_O.fn.ext = ((key, fn) => O_O.add(key).to(O_O.fn).method(fn))
-
-
+O_O.fn.ext('obj', (x = null) => Object.create(x))
+O_O.fn.ext('arr', (x = []) => Array.from(x))
 O_O.fn.ext('compose', (...fns) => fns.reduce((f, g) => (...args) => f(g(...args))))
 O_O.fn.pipe = (...fns) => fns.reduce((f, g) => (...args) => g(f(...args)));
 O_O.Π = O_O.fn.curry((key) => (c) => O_O.add(key).to(O_O.Π).get(O_O.fn.curry(c)))
@@ -86,7 +85,7 @@ O_O.type = (x) => {
 }
 
 O_O.ObjWithDefault = class extends Object {
-  constructor(obj) { super(obj) }
+  constructor(obj) { super(obj);  this.#default = obj; return this }
   #default = ((obj) => Array.isArray(obj) ? obj : [obj])
   set default(fnOrObj) { this.#default = fnOrObj }
   use(key, val=null) {
@@ -94,6 +93,7 @@ O_O.ObjWithDefault = class extends Object {
     pp({ value: val ?? this.#default })
   }
 }
+O_O.objectWithDefault = (obj = null) => new O_O.ObjWithDefault(obj ?? {})
 
 O_O.fn.dissectUrl = (url) => {
   if (typeof url !== 'string') return { host: 'localhost', protocol: 'http' }
@@ -103,7 +103,7 @@ O_O.fn.dissectUrl = (url) => {
   return { host, protocol, port, path, querystring, hashmark }
 }
 
-O_O._ = new O_O.ObjWithDefault({})
+O_O._ = O_O.objectWithDefault()
 O_O._.default = (cval) => O_O.fn.curry(cval)
 O_O._.use('proto', Object.getPrototypeOf)
 O_O._.use('props', Object.getOwnPropertyNames)

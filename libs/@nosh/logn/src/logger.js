@@ -109,11 +109,11 @@ export class Logger {
           const ptime = Math.floor(elapsed / (time * 1000))
           const reduceby = ptime * time * 1000
           elapsed -= reduceby
-          timestring += `${ptime}${unit}`
+          timestring = `${timestring}${ptime}${unit}`
         }
       })
     }
-    timestring += `${elapsed}ms`
+    timestring = `${timestring}${elapsed}ms`
     return timestring
   }
 

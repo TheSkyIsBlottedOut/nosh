@@ -7,7 +7,7 @@ type SQLRiteQueueItem = { db: string, sql: string, params: any[], fn: () => any 
 // Class for encapsulation of SQLRite functionality.
 type SQLRiteSemaphore = { locked: boolean, lock: () => void, unlock: () => void }
 type SQLRiteDatabase = { connection: any, name: string, schema: Record<string, any>, indexes: string[], columns: string[], semaphore: SQLRiteSemaphore }  
-const SQLRiteProcessQueue = { fn: {} as Record<string, ((...any)=>any)>, databases: O_O.ObjWithDefault({ connection: null, name: '', schema: {}, indexes: [], columns: [], semaphore: { locked: false, lock: () => { }, unlock: () => { } } as SQLRiteSemaphore } as SQLRiteDatabase), queue: [] as SQLRiteQueueItem[] } as Record<string, any>
+const SQLRiteProcessQueue = { fn: {} as Record<string, ((...any)=>any)>, databases: O_O.objectWithDefault({ connection: null, name: '', schema: {}, indexes: [], columns: [], semaphore: { locked: false, lock: () => { }, unlock: () => { } } as SQLRiteSemaphore } as SQLRiteDatabase), queue: [] as SQLRiteQueueItem[] } as Record<string, any>
 SQLRiteProcessQueue.fn.tick = () => { if (SQLRiteProcessQueue.databases.semaphore.locked) return; return SQLRiteProcessQueue.fn.processNext() }
 SQLRiteProcessQueue.fn.processNext = () => { if (SQLRiteProcessQueue.queue.length > 0) { const { db, sql, params, fn } = SQLRiteProcessQueue.queue.shift() as SQLRiteQueueItem; new SQLRite({ dbfile: db }).$(sql, ...params); fn() } }
 SQLRiteProcessQueue.fn.queuedPromise = (db: string, sql: string, ...params: any[]) => { return new Promise((resolve) => { SQLRiteProcessQueue.queue.push({ db, sql, params, fn: resolve }) }) }

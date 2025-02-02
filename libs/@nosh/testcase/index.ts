@@ -8,7 +8,7 @@ import { Logger } from '@nosh/logn'
 
 export const test = (testcases: Record<string, () => void>) => {
   const logger = new Logger({ name: 'testcase' })
-  const results = O_O.obj()
+  const results = O_O.obj
   const run = async () => {
     for (const [name, testcase] of Object.entries(testcases)) {
       try {
@@ -20,12 +20,12 @@ export const test = (testcases: Record<string, () => void>) => {
         logger.error(`⛔️ ${name} failed with error: ${e}`)
       }
     }
-    logger.info(results)
+    logger.info(`Test results: ${JSON.stringify(results)}`)
   }
   run()
 }
 
-export const testsuite = () => O_O.ObjWithDefault(()=>false)
+export const testsuite = () => O_O.objectWithDefault(()=>false)
 
 export class TestCaseError extends Error {
   constructor(message: string) {
@@ -33,7 +33,7 @@ export class TestCaseError extends Error {
     this.name = 'TestCaseError'
   }
 }
-const util = O_O.obj()
+const util = O_O.obj
 util.sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 util.isEqual = (a: any, b: any) => JSON.stringify(a) === JSON.stringify(b)
 util.isNotEqual = (a: any, b: any) => JSON.stringify(a) !== JSON.stringify(b)

@@ -1,13 +1,13 @@
 import { SQLRite, SQLRiteError, SQLRiteProcessQueue } from './index'
 import { test, util } from '../testcase' // vscode doesn't like testcase, probably a tsconfig reload issue. TODO: set this to @nosh/testcase
 import { O_O } from '@nosh/unhelpfully'
-const SQLRiteTest = O_O.ObjWithDefault(()=>false)
+const SQLRiteTest = O_O.objectWithDefault(()=>false)
 
 SQLRiteTest.createTable = async () => {
   const db = new SQLRite({ dbfile: ':memory:' })
   await db.$('CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT)')
   const schema = await db.schema()
-  return util.isEqual(schema, [{ type: 'table', name: 'test', tbl_name: 'test', rootpage: 2, sql: 'CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT)' }])
+  return util.test('create table', util.isEqual(schema, [{ type: 'table', name: 'test', tbl_name: 'test', rootpage: 2, sql: 'CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT)' }]))
 }
 
 SQLRiteTest.insert = async () => {
