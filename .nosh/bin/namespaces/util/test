@@ -1,0 +1,24 @@
+#!/usr/bin/env zsh
+#- test - run testcase tests via bun
+# &usage: test [namespace] [command] [testcase]
+# &description: test is a task runner for your bun monorepo.
+# &... it has a handful of helper scripts to make your life easier.
+
+__quit_usage() {
+  scrawl error test.usage "test requires a command to run. Usage: test [namespace] [command] [testcase]"
+  exit 1
+}
+__safequit() {
+  local content="$@"
+  scrawl info test.response "$@"
+}
+
+[[ $# -eq 0 ]] && __quit_usage
+if [[ "$1" == "ok?" ]]; then
+  echo "test is fully operational! All systems are go!"
+  exit 0
+fi
+
+LibTest="${Nosh_AppDir}/libs/@nosh/$1"
+find $LibTest -type f -name "test.ts" -exec bun run {} 1>&2 \;
+exit 0

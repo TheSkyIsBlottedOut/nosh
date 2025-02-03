@@ -70,5 +70,5 @@ else
   scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
 fi
 echo "Running command: $(basename "$CommandPath")  \"$Subcommand\"   \"${Remainder}\"" 1>&2
-exec "$CommandPath" "$Subcommand" "${Remainder[@]}"
+$($CommandPath "$Subcommand" "${Remainder[@]}")
 exit 0

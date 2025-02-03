@@ -1,6 +1,8 @@
 import { SQLRite, SQLRiteError, SQLRiteProcessQueue } from './index'
 import { test, util } from '../testcase' // vscode doesn't like testcase, probably a tsconfig reload issue. TODO: set this to @nosh/testcase
 import { O_O } from '@nosh/unhelpfully'
+// @ts-expect-error - no types for bun
+import { $ } from 'bun'
 const SQLRiteTest = O_O.objectWithDefault(()=>false)
 
 SQLRiteTest.createTable = async () => {
@@ -32,6 +34,13 @@ SQLRiteTest.count = async () => {
   await db.insert({ name: 'test' })
   const count = await db.count('test')
   return util.isEqual(count, 1)
+}
+
+SQLRiteTest.createFile = async () => {
+  const db = new SQLRite({ dbfile: 'test.sqlite3' })
+  await db.initConnection()
+  return util.test('create file', util.isEqual(db.path, `${process.env.Nosh_AppDir}/data/db/test.sqlite3`)) && util.test('file exists', $`test -f ${db.path}`)
+  
 }
 
 test(SQLRiteTest)

@@ -7,7 +7,7 @@ Namespace="$2"
 
 Files=("$(find -L "$Nosh_BinDir/namespaces/$Namespace" -type f -name "*" | cut -d/ -f6 | cut -d. -f1 | sort)")
 for File in $Files; do
-  head -n5 "$Nosh_BinDir/namespaces/$Namespace/$File" | grep -q "#- " || continue
+  echo "$File" 1>&2
   Description="$(head -n5 "$Nosh_BinDir/namespaces/$Namespace/$File" | grep "#- " | cut -c4-)"
   # lpad filename. If it is in an arch subfolder, move it so mac/file -> file (mac)
   [[ $File == *"/"* ]] && File="$(echo $File | cut -d/ -f2) ($(echo $File | cut -d/ -f1))"

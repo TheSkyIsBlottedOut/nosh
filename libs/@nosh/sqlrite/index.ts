@@ -34,16 +34,24 @@ SQLRiteProcessQueue.fn.safetyMeasures = () => {
   SQLRiteProcessQueue._safety_measures = true;
 }
 
-class SQLRite {x
+class SQLRite {
   _config: { dbfile?: string; };
   constructor(conf = {}) { this._config = conf; }
   get name() { return this.config.dbfile ?? ':memory:' }
   get config() { return this._config ?? {} }
   get cnx() { SQLRiteProcessQueue.fn.safetyMeasures(); return SQLRiteProcessQueue.databases[this.name] }
+  get path() {
+    if (this.name === ':memory:') return ':memory:';
+    if (this.name === ':temp:') return ':temp:';
+    if (this.name.startsWith('/')) return this.name;
+    if (this.name.startsWith('file:')) return this.name;
+    const suffix = /\.(?:db|sqlite3?)$/.test(this.name) ? '' : '.sqlite3';
+    return `${process.env.Nosh_AppDir}/data/db/${this.name}${suffix}`
+  }
   async initConnection() {
     if (!SQLRiteProcessQueue.databases?.[this.name]) SQLRiteProcessQueue.databases[this.name] = { connection: null, name: this.name, schema: {}, indexes: [], columns: [], semaphore: { locked: false, lock: () => { }, unlock: () => { } } }
     if (!SQLRiteProcessQueue.databases?.[this.name]?.connection) {
-      SQLRiteProcessQueue.databases[this.name].connection = new Database(this.name);
+      SQLRiteProcessQueue.databases[this.name].connection = new Database(this.path);
       Promise.all([this.schema, this.indexes(), this.columns()]).catch(e => { throw new SQLRiteError(e) }).then(([schema_, indexes_, columns_]) => {
         SQLRiteProcessQueue.databases[this.name].schema = schema_;
         SQLRiteProcessQueue.databases[this.name].indexes = indexes_;

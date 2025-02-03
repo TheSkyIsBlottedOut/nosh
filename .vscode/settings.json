@@ -13,5 +13,9 @@
   },
   "editor.inlineCompletionsAccessibilityVerbose": true,
   "editor.tabSize": 2,
-  "editor.quickSuggestions": false
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  }
 }
