@@ -14,8 +14,6 @@ for F in "${Files[@]}"; do
   Description="$(head -n10 "$F" | grep "^#- " | cut -c3-)"
   # Remove all folders from the path in F, up to the folder matching namespaces/\w+/
   F="$(echo "$F" | perl -pe "s/.+\/(\w+)/\1/")"
-  # If the file is in the root of the namespace, it is a mac/linux file, so just print it.
-  # If it is in a subfolder, print it as mac/file -> file (mac)
   printf "%-20s %-40s\n" "$F" "$Description" 1>&2
 done
 #echo "\n\nMore namespaces: ${$(ls -1 "$Nosh_BinDir/namespaces" | tr '\n' '|')}" &1>2
