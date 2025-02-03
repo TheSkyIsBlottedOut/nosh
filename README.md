@@ -17,12 +17,10 @@ you have the following set up:
 
 1. Install 'direnv'; I don't have a non-intrusive way to install this package yet, so please install it manually. Alternately, you can `source .envrc` to load the environment variables. (I do have a script for force-install of direnv, but would prefer to stay out of the user's HOME directory when possible).
 
-2. Right now I'm just trying to get clean feature parity with the older apps. We'll get there.
-
-Read the manifesto on the nosh page (or below!)
-check out the [Linear](https://linear.app/fintech-black-ops/projects/all) projects
-and the [Notion](https://www.notion.so/Axiomatic-Dogma-1494496f5d838066b08fd091feed4227)
-
+Milestones:
+- Full feature set. Progress: 50%
+- Fully functional web framework with components
+- Launch of sites using Nosh to public domains
 
 # Nosh: From The Official Repo
 
