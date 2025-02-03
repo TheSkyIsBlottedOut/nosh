@@ -35,8 +35,25 @@ Eventually, we'll detect patterns that the nosh tooling can modify for a given a
 
 There are three general app patterns that Bun lends itself to:
 
-- **Thin Frontend + Express/Bun Backend**: This is the most common pattern. There is ongoing work to make the bun/express pattern work in pure bun.
+- **Thin Frontend + Express/Bun Backend**: This is the most common pattern. The @nosh/freebooter enables a more customizable api set, which includes optional helper methods, safeguards, and authentication middleware patterns.
 
-- **Full Stack Bun** - One app serves frontend and API, and data files can be stored in the app directory or in a shared workspace.
+- **Full Stack Bun** - Often, we use separate frameworks - one for react apps/elements (such as NextJS) and one for APIs (express). Freebooter supports both patterns in the same app; it functionally replaces the filesystem-based routing pattern in NextJS with three routing patterns:
 
-- **Templated Apps** - Apps that are generated from templates. This is the most common pattern for new apps.
+1. Static - files in a public folder; this defaults to app/MYAPP/public.
+2. Pages - the nextjs page pattern; this is configured in staging.
+3. Named - the api pattern where filesystem and routes are not 1:1.
+
+You can see this configured in the etc/app.json for the sample app.
+```json
+  "routes": {
+    "prefix": null,
+    "static": {
+      "paths": ["public"],
+      "options": { "maxAge": 0 }
+    },
+    "named": { "paths": ["src/api"] },
+    "views": "src/scenes"
+  }
+```
+
+- **Templated Apps** - Apps that are generated from templates. This is the most common pattern for new apps. Once we have defined a set of patterns for UX, nosh templates can also be published.
