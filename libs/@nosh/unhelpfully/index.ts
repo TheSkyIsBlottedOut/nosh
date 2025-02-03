@@ -1,29 +1,33 @@
 const _ = (x:null|object=null) => Object.create(x);
 const O_O = _({});
-O_O.fn = _(); O_O.fn.curry = (fn, ...a) => (...b) => fn(...a, ...b)
-O_O.fn.toFn = (fo) => (typeof fo === 'function' && fo.length === 0) ? fo : () => fo;
+type AnyArgs = any[];
+type AnyFn = (...args: AnyArgs) => any;
+type Obj = Record<string|symbol, any>;
+type ObjOrFn = Obj | AnyFn;
+O_O.fn = _(); O_O.fn.curry = (fn: AnyFn, ...a: AnyArgs) => (...b: AnyArgs) => fn(...a, ...b)
+O_O.fn.toFn = (fo: ObjOrFn) => (typeof fo === 'function' && fo.length === 0) ? fo : () => fo;
 O_O.fn.def = O_O.fn.curry(Object.defineProperty)
 
-O_O.add = (key) =>{ return { to: (obj) => {
+O_O.add = (key: string) =>{ return { to: (obj: any) => {
   const pp = O_O.fn.curry(O_O.fn.def, obj, key);
   return {
-    get: (fn) => pp({ get: O_O.fn.toFn(fn) }),
-    set: () => pp({ set: (val) => obj[`_${key}`] = val, get: () => obj[`_${key}`] }),
-    method: (fn) => pp({ get: O_O.fn.toFn(fn) }),
-    value: (val) => O_O._.prop(obj, key, { value: val })
+    get: (fn: ()=>any) => pp({ get: O_O.fn.toFn(fn) }),
+    set: () => pp({ set: (val: any) => obj[`_${key}`] = val, get: () => obj[`_${key}`] }),
+    method: (fn: any) => pp({ get: O_O.fn.toFn(fn) }),
+    value: (val: any) => O_O._.prop(obj, key, { value: val })
   }
 }
 }}
 O_O.add('obj').to(O_O).get(() => Object.create(null))
-O_O.fn.ext = ((key, fn) => O_O.add(key).to(O_O.fn).method(fn))
+O_O.fn.ext = ((key: string|symbol, fn: AnyFn) => O_O.add(key).to(O_O.fn).method(fn))
 O_O.fn.ext('obj', (x = null) => Object.create(x))
 O_O.fn.ext('arr', (x = []) => Array.from(x))
-O_O.fn.ext('compose', (...fns) => fns.reduce((f, g) => (...args) => f(g(...args))))
-O_O.fn.pipe = (...fns) => fns.reduce((f, g) => (...args) => g(f(...args)));
-O_O.Π = O_O.fn.curry((key) => (c) => O_O.add(key).to(O_O.Π).get(O_O.fn.curry(c)))
+O_O.fn.ext('compose', (...fns: any[]) => fns.reduce((f, g) => (...args: any[]) => f(g(...args))))
+O_O.fn.pipe = (...fns: any[]) => fns.reduce((f, g) => (...args: any[]) => g(f(...args)));
+O_O.Π = O_O.fn.curry((key: any[]) => (c: any) => O_O.add(key).to(O_O.Π).get(O_O.fn.curry(c)))
 O_O.fn.up = (obj = { up: O_O.fn.fnize(O_O)}) => Object.getPrototypeOf(obj).up?.() ?? obj?.up?.() ?? obj
-O_O.fn.json = (_) => typeof _ === 'string' ? JSON.parse(_) : JSON.stringify(_)
-O_O.fn.interpolate = (str) => (obj) => { str.replace(/:(\w+)/g, (_, key) => obj[key] ?? '') }
+O_O.fn.json = (_: any) => typeof _ === 'string' ? JSON.parse(_) : JSON.stringify(_)
+O_O.fn.interpolate = (str: string) => (obj: any) => { str.replace(/:(\w+)/g, (_, key) => obj[key] ?? '') }
 
 O_O.ancestorsOf = (obj = {}) => {
   const anc:unknown[] = [];
@@ -32,9 +36,9 @@ O_O.ancestorsOf = (obj = {}) => {
   proto = O_O._.proto(proto);
   return anc;
 }
-O_O.methodsOf = (obj) => {
-  O_O.ancestorsOf(obj).reduce((acc, anc) => {
-    O_O._.props(anc).forEach((prop) => {
+O_O.methodsOf = (obj: Record<string|symbol, any>) => {
+  O_O.ancestorsOf(obj).reduce((acc: Record<string|symbol, any>, anc: Record<string|symbol, any>) => {
+    O_O._.props(anc).forEach((prop: string|symbol) => {
       if (typeof obj?.[prop] === "function") acc[prop] = obj[prop];
     });
     return acc;
@@ -42,15 +46,14 @@ O_O.methodsOf = (obj) => {
 }
 
 class TypedArray extends Array {
-  constructor(...args){ super (...args) }
-  test(type, fn) { if (fn(this)) this.push(type); return this }
-  is(...k) { return k.filter(x => this.includes(x)) }
-  isnt(...k) { return k.filter(x => !this.includes(x)) }
+  constructor(...args: AnyArgs){ super (...args) }
+  test(type: string, fn: AnyFn) { if (!!fn(this)) this.push(type); return this }
+  is(...k: any[]) { return k.filter(x => this.includes(x)) }
+  isnt(...k: any[]) { return k.filter(x => !this.includes(x)) }
 }
 
 
-O_O.type = (x) => {
-
+O_O.type = (x: any) => {
   const r: TypedArray = new TypedArray()
   r.push(x?.constructor?.name ?? x?.name ?? typeof x)
   r.test('array', Array.isArray)
@@ -60,14 +63,14 @@ O_O.type = (x) => {
   r.test('number', x => typeof x === 'number')
   r.test('string', x => typeof x === 'string')
   r.test('boolean', x => typeof x === 'boolean')
-  r.test('character', x => typeof x === 'string' && x.length === 1)
+  r.test('character', x => typeof x === 'string' && (x as string).length === 1)
   r.test('undefined', x => typeof x === 'undefined')
   r.test('null', x => x === null)
   r.test('promise', x => x instanceof Promise)
   r.test('iterable', x => x[Symbol.iterator])
-  r.test('async', x => x[Symbol.asyncIterator])
+  r.test('async', x => (x as Obj)[Symbol.asyncIterator as symbol|string])
   r.test('generator', x => x[Symbol.iterator] && x[Symbol.iterator].prototype)
-  r.test('async-generator', x => x[Symbol.asyncIterator] && x[Symbol.asyncIterator].prototype)
+  r.test('async-generator', x =>  (x as Obj)[Symbol.asyncIterator] && (x as Obj)[Symbol.asyncIterator].prototype)
   r.test('regexp', x => x instanceof RegExp)
   r.test('date', x => x instanceof Date)
   r.test('error', x => x instanceof Error)
@@ -80,22 +83,21 @@ O_O.type = (x) => {
   r.test('arraybuffer', x => x instanceof ArrayBuffer)
   r.test('dataview', x => x instanceof DataView)
   r.test('stringable', x => x.toString)
-  r.test('callable', x => x.call)
+  r.test('callable', x => (x as Record<symbol|string, any>).call)
   return r
 }
 
 O_O.ObjWithDefault = class extends Object {
-  constructor(obj) { super(obj);  this.#default = obj; return this }
-  #default = ((obj) => Array.isArray(obj) ? obj : [obj])
-  set default(fnOrObj) { this.#default = fnOrObj }
-  use(key, val=null) {
+  constructor(obj: any) { super(obj);  this.#default = obj; return this }
+  #default = ((obj: any) => Array.isArray(obj) ? obj : [obj]) as Record<symbol|string, any>|((...args:any[])=>any)
+  set default(fnOrObj: ((...args: any[])=>any)|Record<symbol|string,any>) { this.#default = fnOrObj }
+  use(key: string|symbol, val=null) {
     const pp = O_O.fn.curry(Object.defineProperty, this, key)
     pp({ value: val ?? this.#default })
   }
 }
-O_O.objectWithDefault = (obj = null) => new O_O.ObjWithDefault(obj ?? {})
 
-O_O.fn.dissectUrl = (url) => {
+O_O.fn.dissectUrl = (url: string) => {
   if (typeof url !== 'string') return { host: 'localhost', protocol: 'http' }
   const grouped_data = url.match(/^(?<protocol>https?)?\:\/\/(?<host>[^\/]+)(\:(?<port>\d+))?(?<path>\/[^\?]+)?(\?(?<querystring>[^\#]+))?(#(?<hashmark>[^\s]+))?/)?.groups
   if (!grouped_data) return { host: 'localhost', protocol: 'http' }
@@ -104,7 +106,7 @@ O_O.fn.dissectUrl = (url) => {
 }
 
 O_O._ = O_O.objectWithDefault()
-O_O._.default = (cval) => O_O.fn.curry(cval)
+O_O._.default = (cval: any) => O_O.fn.curry(cval)
 O_O._.use('proto', Object.getPrototypeOf)
 O_O._.use('props', Object.getOwnPropertyNames)
 O_O._.use('prop', Object.getOwnPropertyDescriptor)
@@ -149,11 +151,11 @@ O_O.matchers = {
   hexcolorshortalpha: /^#[0-9a-f]{4}$/,
   linguistics: /^(([aeiou]?)([^aeiou]*)([aeiou])([^aeiou]?)+\W{0,12})+|nth$/,
 }
-O_O.fn.matchStringType = (str) => (key) => O_O.matchers[key].test(str)
+O_O.fn.matchStringType = (str: string) => (key: string) => O_O.matchers[key].test(str)
 // O_O.fn.matchStringType('rgb(55,155,255)')('rgb')
 
 
-O_O.fn.intRoot = (n) => {
+O_O.fn.intRoot = (n: number) => {
   // largest number which, when squared, is less than n. No cheating with sqrt, we're doing O(log n).
   if (n < 0) return 0
   // start at half of n, which is usually too big.
@@ -169,11 +171,11 @@ O_O.fn.intRoot = (n) => {
 O_O.primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97] as number[]
 O_O.fn.nextPrime = () => {
   let p = O_O.primes[O_O.primes.length - 1] + 2
-  while (O_O.primes.some((prime) => p % prime === 0)) p += 2
+  while (O_O.primes.some((prime: number) => p % prime === 0)) p += 2
   O_O.primes.push(p)
   return p
 }
-O_O.fn.primeFactors = (n) => {
+O_O.fn.primeFactors = (n: number) => {
   let num = Math.abs(Math.floor(n))
   if ([0,1].includes(num)) return [num]
   const factors: number[] = []

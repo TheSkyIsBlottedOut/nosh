@@ -11,7 +11,7 @@ const SQLRiteProcessQueue = { fn: {} as Record<string, ((...any)=>any)>, databas
 SQLRiteProcessQueue.fn.tick = () => { if (SQLRiteProcessQueue.databases.semaphore.locked) return; return SQLRiteProcessQueue.fn.processNext() }
 SQLRiteProcessQueue.fn.processNext = () => { if (SQLRiteProcessQueue.queue.length > 0) { const { db, sql, params, fn } = SQLRiteProcessQueue.queue.shift() as SQLRiteQueueItem; new SQLRite({ dbfile: db }).$(sql, ...params); fn() } }
 SQLRiteProcessQueue.fn.queuedPromise = (db: string, sql: string, ...params: any[]) => { return new Promise((resolve) => { SQLRiteProcessQueue.queue.push({ db, sql, params, fn: resolve }) }) }
-SQLRiteProcessQueue.fn.processQueue = () => { SQLRiteProcessQueue.queue.forEach(({ db, sql, params }) => { new SQLRite({ dbfile: db }).$(sql, ...params) }) }
+SQLRiteProcessQueue.fn.processQueue = () => { SQLRiteProcessQueue.queue.forEach(({ db, sql, params }: SQLRiteQueueItem) => { new SQLRite({ dbfile: db }).$(sql, ...params) }) }
 SQLRiteProcessQueue.fn.clearQueue = () => { SQLRiteProcessQueue.queue = [] }
 SQLRiteProcessQueue.fn.awaitUnlock = (database: string) => {
   return new Promise<void>((resolve) => {

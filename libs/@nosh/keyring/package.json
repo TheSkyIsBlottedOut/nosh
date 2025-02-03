@@ -1,0 +1,21 @@
+{
+  "name" : "@nosh/keyring",
+  "description" : "A secure keyring service for nosh on bun.",
+  "main" : "index.ts",
+  "type" : "module",
+  "private" : false,
+  "keywords" : [ "keyring", "nosh", "bun" ],
+  "version" : "0.0.1",
+  "engines" : {
+    "bun" : ">=1.1.38"
+  },
+  "dependencies" : {
+    "nacl" : "^0.1.3",
+    "node-rsa" : "^1.1.1",
+    "scrypt" : "^6.0.3",
+    "sqlrite" : "workspace:libs/@nosh/sqlrite@*",
+    "unhelpfully" : "workspace:libs/@nosh/unhelpfully@*",
+    "nokv" : "workspace:libs/@nosh/nokv@*",
+    "bun" : "^1.1.38"
+  }
+}

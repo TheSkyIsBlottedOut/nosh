@@ -60,7 +60,7 @@ const MagicLinkAuthenticator = (authentic_instance: Authentic) => {
     if (!magicLink) throw new MagicLinkError('No magic link provided.')
     if (magicLink.length !== 36) throw new MagicLinkError('Invalid magic link.')
     if (!validateConfig()) return null
-    const user = $(`SELECT * FROM ${authentic_instance.config.auth.table} WHERE ${authentic_instance.config.auth.magic_column} = ${magicLink} LIMIT 1`)
+    const user = await $(`SELECT * FROM ${authentic_instance.config.auth.table} WHERE ${authentic_instance.config.auth.magic_column} = ${magicLink} LIMIT 1`)
     if (!user) return null
     await ator.clear(user[authentic_instance.config.auth.email_column])
     return user
