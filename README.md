@@ -7,6 +7,11 @@ There are lots of tools in the @nosh namespace:
 - [freebooter](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/freebooter): The nosh bootloader, with lots of neat features;
 - [sqlrite](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/sqlrite): SQLite (from bun) wrapped in backtick functions;
 - [logn](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/logn) The core logger;
+- [testcase](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/testcase): A lightweight test suite;
+- [neoclassical](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/neoclassical): A set of extensions to core JS classes;
+- [nokv](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/nokv): an LMDB library;
+- [authentic](https://github.com/TheSkyIsBlottedOut/nosh/tree/main/libs/%40nosh/authentic): an authenticator library.
+
 
 ## Sample Branch - A small web app for encrypted pastes
 
