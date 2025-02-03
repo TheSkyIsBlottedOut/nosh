@@ -30,7 +30,7 @@ const incomprehensibly = async (str: string) => await Bun.$`${process.env.Nosh_A
 
 const PasswordAuthenticator = (authentic_instance: Authentic) => {
   const config = { db: ':memory:',  ...authentic_instance.config, auth: { ...PasswordDefaultConfig, ...authentic_instance.config.auth } }
-  const ator = O_O.obj()
+  const ator = O_O.obj
   const validateConfig = () => {
     if (!config.db) throw new PasswordError('No database configuration provided.')
     if (Object.keys(config.auth).length < 1) throw new PasswordError('No authentication configuration provided.')

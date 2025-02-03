@@ -2,9 +2,9 @@ import { SQLRite } from '../../sqlrite'
 
 const createUserTable = async (config = { db: ':memory', table: 'users' }) => {
   const db = new SQLRite({ dbfile: config.db })
-  await db.$(`CREATE TABLE ${config.table} (id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT, magic_token VARCHAR(36), magic_expires_at TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP)`)
+  await db.$(`CREATE TABLE IF NOT EXISTS ${config.table} (id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT, magic_token VARCHAR(36), magic_expires_at TIMESTAMP, created_at TIMESTAMP, updated_at TIMESTAMP)`)
   return {
-    db: db,
+    db: config.db,
     table: config.table,
     auth: {
       magic_column: 'magic_token',
