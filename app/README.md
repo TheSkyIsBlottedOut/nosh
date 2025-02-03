@@ -57,3 +57,6 @@ You can see this configured in the etc/app.json for the sample app.
 ```
 
 - **Templated Apps** - Apps that are generated from templates. This is the most common pattern for new apps. Once we have defined a set of patterns for UX, nosh templates can also be published.
+
+## Running the app
+From the nosh repo root, run `./launch.sh MYAPP` to run the app in folder MYAPP.

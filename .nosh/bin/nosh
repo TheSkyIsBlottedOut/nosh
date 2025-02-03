@@ -50,25 +50,23 @@ if [[ -z "$Command" ]]; then
   Command="$Namespace"
   Namespace="util"
 fi
-  echo "Namespace: $Namespace Command: $Command Subcommand: $Subcommand Remainder: $Remainder" 1>&2
-[[  ! -d "$Nosh_BinDir/namespaces" ]] && scrawl error nosh.namespace "No namespaces found. Use nosh list to get started." && exit 1
-[[ ! -d "$Nosh_BinDir/namespaces/$Namespace" ]] && scrawl error nosh.namespace "Namespace $Namespace not found. Use nosh list to get started." && exit 1
-# Command can be in the namespace fold r or an arch subfolder, 'mac' or 'linux'
+
+RemainderTitle=$([[ -z "$Remainder" ]] && echo "" || echo "Arguments: $Remainder")
+  echo "Namespace: $Namespace Command: $Command Subcommand: $Subcommand $RemainderTitle" 1>&2
+[[  ! -d "$Nosh_BinDir/namespaces" ]] && scrawl error nosh.namespace "No namespaces found! Do you need to update your nosh install?" && exit 1
+[[ ! -d "$Nosh_BinDir/namespaces/$Namespace" ]] && scrawl error nosh.namespace "Namespace $Namespace not found. Use nosh util:list to get started." && exit 1
+# Command can be in the namespace folder or an arch subfolder, 'mac' or 'linux'
 OSFolder="$(case $(uname -s) in
   Darwin) echo "mac" ;;
   Linux) echo "linux" ;;
   *) echo "general" ;;
 esac)"
 CorePath="$Nosh_BinDir/namespaces/$Namespace"
-if [[ -x "$CorePath/$Command" ]]; then
-  CommandPath="$CorePath/$Command"
-elif [[ -x "$CorePath/$OSFolder/$Command" ]]; then
-  CommandPath="$CorePath/$OSFolder/$Command"
-elif [[ -f "$CorePath/$OSFolder/util/$Command" ]]; then
-  CommandPath="$CorePath/$OSFolder/util/$Command"
-else
-  scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
-fi
-echo "Running command: $(basename "$CommandPath")  \"$Subcommand\"   \"${Remainder}\"" 1>&2
+CommandPath=""
+[[ -x "$CorePath/$Command" ]] && CommandPath="$CorePath/$Command"
+[[ -x "$CorePath/$OSFolder/$Command" ]] && CommandPath="$CorePath/$OSFolder/$Command"
+[[ -f "$CorePath/$OSFolder/util/$Command" ]] && CommandPath="$CorePath/$OSFolder/util/$Command"
+[[ -z "$CommandPath" ]] && scrawl error nosh.command "Command $Command not found in namespace $Namespace" && exit 1
+echo "Running command: $(basename "$CommandPath") \"$Subcommand\" \"${Remainder}\"" 1>&2
 $($CommandPath "$Subcommand" "${Remainder[@]}")
 exit 0

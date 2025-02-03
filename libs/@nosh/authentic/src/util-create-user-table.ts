@@ -10,8 +10,12 @@ const createUserTable = async (config = { db: ':memory', table: 'users' }) => {
       magic_column: 'magic_token',
       email_column: 'email',
       password_column: 'password',
-      hashing_method: 'scrypt',
-      magic_expiry_column: 'magic_expiry' // optional
+      magic_expiry_column: 'magic_expiry', // optional
+      hash: {
+        method: 'scrypt',
+        salt: '',
+        options: { maxtime: 0.1, maxmem: 32 * 1024 * 1024, maxmemfrac: 0.5 }
+      }
     }
   }
 }

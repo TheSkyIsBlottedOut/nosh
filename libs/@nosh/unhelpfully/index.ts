@@ -96,7 +96,7 @@ O_O.ObjWithDefault = class extends Object {
     pp({ value: val ?? this.#default })
   }
 }
-
+O_O.objectWithDefault = (obj: Record<symbol|string, any>) => new O_O.ObjWithDefault(obj)
 O_O.fn.dissectUrl = (url: string) => {
   if (typeof url !== 'string') return { host: 'localhost', protocol: 'http' }
   const grouped_data = url.match(/^(?<protocol>https?)?\:\/\/(?<host>[^\/]+)(\:(?<port>\d+))?(?<path>\/[^\?]+)?(\?(?<querystring>[^\#]+))?(#(?<hashmark>[^\s]+))?/)?.groups
@@ -105,7 +105,7 @@ O_O.fn.dissectUrl = (url: string) => {
   return { host, protocol, port, path, querystring, hashmark }
 }
 
-O_O._ = O_O.objectWithDefault()
+O_O._ = O_O.objectWithDefault({})
 O_O._.default = (cval: any) => O_O.fn.curry(cval)
 O_O._.use('proto', Object.getPrototypeOf)
 O_O._.use('props', Object.getOwnPropertyNames)
