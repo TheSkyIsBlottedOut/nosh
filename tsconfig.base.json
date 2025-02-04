@@ -14,7 +14,8 @@
     "baseUrl": "./",
     "paths": {
       "bun": ["~/.bun/node_modules/bun"], // This needs to be updated to local bun.
-      "@nosh/*": ["libs/@nosh/*"]
+      "@nosh/*": ["libs/@nosh/*"],
+      "@nosh/compact": ["libs/@nosh/compact"]
     }
   }
 }

@@ -42,7 +42,7 @@
     "noscriptMessage": "lol plz try again with js enabled"
   },
   "middleware": {
-    "antibot": {
+    "botless": {
       "enabled": true,
       "options": {
         "whitelisted": ["curl", "node-fetch", "axios", "faraday", "httparty"],
@@ -50,6 +50,14 @@
         "denyBadActors": "always",
         "behavior": "standard",
         "description": "Standard middleware sends a random error code on route fetch."
+      }
+    },
+    "sassy": {
+      "styles": ["src/styles"],
+      "output": "public/styles",
+      "options": {
+        "minify": true,
+        "sourceMap": false
       }
     },
     "rateLimit": {

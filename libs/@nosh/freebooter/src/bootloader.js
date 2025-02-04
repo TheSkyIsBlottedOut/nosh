@@ -12,7 +12,6 @@ const neo = (obj) => {
   }
 }
 
-
 class Freebooter {
   #config = O_O.obj
   #paths = O_O.obj

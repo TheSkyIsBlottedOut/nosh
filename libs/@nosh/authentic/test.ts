@@ -24,14 +24,14 @@ const initAuthentic = async () => {
 }
 
 AuthenticTest.magicTokenCreate = async () => {
-  const { authentic, config } = await initAuthentic()
+  const { authentic } = await initAuthentic()
   const auth = await authentic.ators.MagicLinkAuthenticator()
   const token = await auth.generate()
   return util.isEqual(token.length, 36)
 }
 
 AuthenticTest.magicTokenCreateAndVerify = async () => {
-  const { authentic, config } = await initAuthentic()
+  const { authentic } = await initAuthentic()
   const auth = await authentic.ators.MagicLinkAuthenticator()
   const token = await auth.generate('user@email.com')
   const valid = await auth.verify(token)
@@ -41,7 +41,7 @@ AuthenticTest.magicTokenCreateAndVerify = async () => {
 AuthenticTest.magicTokenCreateAndVerifyFail = async () => {
   const { authentic, config } = await initAuthentic()
   const auth = await authentic.ators.MagicLinkAuthenticator()
-  const token = await auth.generate('user@email.com')
+  await auth.generate('user@email.com')
   const valid = await auth.verify('user@email.com', 'invalid')
   return util.isFalsy(valid)
 }

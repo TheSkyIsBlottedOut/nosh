@@ -39,6 +39,8 @@ Authentic uses scrypt for password hashing, stored in a standard RDBMS.
 
 ## Usage
 
+Magic Link:
+
 ```javascript
 import { Authentic } from '@nosh/authentic'
 configuration_object = {
@@ -51,11 +53,9 @@ configuration_object = {
 }
 
 const authentic = new Authentic(configuration_object)
-const {generate, verify} = authentic.ators.MagicLinkAuthenticator
+const {generate, auth} = authentic.ators.MagicLinkAuthenticator
 const magicLink = generate('user@location.com') // uuid
-const user = verify(magicLink) // user or null; user for magic link
-
-
-
-
+const user = auth(magicLink) // user or null; user for magic link
 ```
+
+

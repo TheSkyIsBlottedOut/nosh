@@ -97,5 +97,5 @@ public class Application: WebViewApplication {
 }
 
 func main() {
-    WebViewApplication.main()
+    Application.main()
 }

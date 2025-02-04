@@ -19,14 +19,14 @@ class NeoObject extends NeoCore {
   }
   get keys() { return Object.keys(this.#value) }
   get values() { return Object.values(this.#value) }
-  get entries() { this.keys.map((k) => [k, this.#value[k]]) }
+  get entries() { (this.keys??[]).map((k) => [k, this.#value[k]]) }
   get length() { return this.keys.length }
   filter(fn) { return this.select(fn) }
-  select(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !!fn(k, v))) }
-  reject(fn) { return new NeoObject.fromEntries(this.entries.filter(([k, v]) => !fn(k, v))) }
+  select(fn) { return NeoObject.fromEntries(Object.entries(this.#value).filter(([k, v]) => fn(k, v))) }
+  reject(fn) { return NeoObject.fromEntries(Object.entries(this.#value).filter(([k, v]) => !fn(k, v))) }
   get compact() { return this.reject((k, v) => !v) }
-  get inverse() { return new NeoObject.fromEntries(this.entries.map(([k, v]) => [v, k])) }
-  get random() { return new NeoArray.from(this.entries).random }
+  get inverse() { return NeoObject.fromEntries(this.entries.map(([k, v]) => [v, k])) }
+  get random() { return NeoArray.from(this.entries).random }
   get ancestors() {
     const response = new NeoArray();
     response.push(this);

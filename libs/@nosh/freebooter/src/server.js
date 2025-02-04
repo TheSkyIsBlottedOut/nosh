@@ -3,12 +3,24 @@ import { Freebooter } from './bootloader'
 import Bun, { $ } from 'bun'
 import { O_O } from 'unhelpfully'
 import { handleApiRequest, handleFSRouterRequest, NeoRequest } from './helpers'
+import { botless } from './botless'
 
-
+const Middleware = { botless }
+const Starterware = {}
+// put a config block in middleware and add a function that takes
+// bunserver instance and request, and returns one of the following:
+// { code: 200, type: "OK" } - allow (pass to next middleware)
+// { code: 3xx-5xx, type: "Error" } - deny
+// 'next' - pass to next middleware
+const registerMiddleware = (name, middleware) => { Middleware[name] = middleware }
+// Starterware is load-time included; use this to add single-run-at-boot middleware.
+// some middleware configs are for @nosh/palatine; these are not included here, but loaded by the palatine plugin in bunfig.toml.
+const registerStarter = (name, middleware) => { Starterware[name] = middleware }
 class BunServer {
   #config = O_O.obj
   #bunconfig = O_O.obj
   #server = Bun.serve({ fetch: async () => { } })
+  #middleware = []
   constructor(configdata) {
     this.#config = configdata
     this.#bunconfig = new Freebooter(configdata)
@@ -26,6 +38,23 @@ class BunServer {
     await this.#bunconfig.loadAllRoutes()
     console.log('[BOOT] Service preloaded')
     return this
+  }
+
+  loadMiddleware() {
+    this.loadStarterware()
+    const mw = Object.keys(this.#config.middleware).filter(name => Middleware[name])
+    mw.forEach(name => {
+      this.logger.info(`Loaded middleware [${name}]`)
+      this.#middleware.push(Middleware[name])
+    })
+  }
+
+  loadStarterware() {
+    const mw = Object.keys(this.#config.middleware).filter(name => Starterware[name])
+    mw.forEach(name => {
+      this.logger.info(`Loaded starterware [${name}]`)
+      Starterware[name](this, this.#config.middleware[name])
+    })
   }
 
   apiRouteFor(path) {
@@ -50,6 +79,7 @@ class BunServer {
 
   async initServer() {
     const wconfig = this.#bunconfig.webConfig
+    this.loadMiddleware()
     this.#server = Bun.serve({
       port: wconfig.port ?? 3000,
       host: wconfig.host ?? 'localhost',
@@ -64,6 +94,16 @@ class BunServer {
         console.log('[SERVER] Fetching request', req.url)
         log.trace('request.start')
         const { pathname, searchParams } = new URL(req.url)
+        const middleware = [...this.#middleware]
+        while (middleware.length > 0) {
+          const result = middleware.shift()(this, req)
+          if (typeof result === 'string' && result === 'next') continue
+          if (typeof result === 'object') {
+            if (result.code === 200) continue
+            log.warn('middleware.denied', { code: result.code, type: result.type })
+            return new Response(result.type, { status: result.code })
+          }
+        }
         // is this an FS route, or is it defined as an api route?
         // API routes are slower to resolve, so we check them last
         const page_result = await handleFSRouterRequest(req, this.pagerouter)

@@ -90,7 +90,7 @@ const error_code_pairs = new NeoObject({
 
 const botMatches = (req) => {
   const ua = req.headers["User-Agent"] ?? "";
-  return matchers.filter((k, v) => (v.test(ua) ? k : null)).compact; // type narray
+  return botmatchers.filter((k, v) => (v.test(ua) ? k : null)).compact; // type narray
 };
 
 const isBot = (req) =>  botMatches(req).length > 0
@@ -110,4 +110,31 @@ const randomErrorStatus = () => {
   return { code: error_code_pairs[key], type: key };
 };
 
-export { isBot, botMatches, randomErrorStatus, unsafeRequestProbability, blockUnsafe };
+// botless middleware in etc - pass the botless config object to botless
+/*
+    "botless": {
+      "enabled": true,
+      "options": {
+        "whitelisted": ["curl", "node-fetch", "axios", "faraday", "httparty"],
+        "allowWithHeader": "X-Nosh-Graybin",
+        "denyBadActors": "always",
+        "behavior": "standard",
+        "description": "Standard middleware sends a random error code on route fetch."
+      }
+    },
+*/
+const botless = (bunserver, request) => {
+  const config = bunserver.config.middleware.botless ?? { enabled: true, whitelisted: [], allowWithHeader: "", denyBadActors: "always", behavior: "standard" }
+  const { enabled, whitelisted, allowWithHeader, denyBadActors, behavior } = config
+  if ((whitelisted??[]).includes(request.headers['User-Agent'])) return 'next'
+  if (!enabled) return 'next'
+  if (allowWithHeader && request.headers[allowWithHeader]) return { code: 200, type: "OK" }
+  if (isBot(request)) {
+    if (denyBadActors === "always") return { code: 403, type: "Forbidden" }
+    if (denyBadActors === "unsafe" && blockUnsafe(request)) return { code: 403, type: "Forbidden" }
+    if (behavior === "standard") return randomErrorStatus()
+    return 'next'
+  }
+}
+
+export { isBot, botMatches, randomErrorStatus, unsafeRequestProbability, blockUnsafe, botless }

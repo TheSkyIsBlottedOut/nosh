@@ -11,5 +11,14 @@
   "publishConfig": {
     "access": "restricted",
     "registry": "http://nosh.registry:4873"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "bun": "^1.1.38",
+    "@nosh/compact": "workspace:libs/@nosh/compact@*",
+    "@nosh/authentic": "workspace:libs/@nosh/authentic@*",
+    "@nosh/keyring": "workspace:libs/@nosh/keyring@*",
+    "@nosh/freebooter": "workspace:libs/@nosh/freebooter@*"
   }
 }

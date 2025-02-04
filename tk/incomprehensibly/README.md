@@ -1,6 +1,6 @@
 # incomprehensibly
 
-TODO: Write a description here
+A salt-enhancer. Expands text into a (very deterministic) longer string. Not particularly useful outside of expanding salts.
 
 ## Installation
 

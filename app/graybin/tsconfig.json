@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "isolatedModules": false
+  },
+  "aliases": {
+    "@/*": ["./src/*"],
+    "$/*": ["./src/$/*"],
+    "public": ["./public/*"],
+    "el": ["./src/$/el/*"],
+    "img": ["./src/$/img/*"],
+    "sections": ["./src/$/sections/*"],
+    "widgets": ["./src/$/widgets/*"]
+  }
+
+}
