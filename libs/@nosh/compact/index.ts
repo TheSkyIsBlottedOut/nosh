@@ -1,1 +1,2 @@
-export * from './src/wrapper.jsx'
+export * from './src/wrapper'
+export * from './src/sassfiles'

@@ -21,6 +21,7 @@ class BunServer {
   #bunconfig = O_O.obj
   #server = Bun.serve({ fetch: async () => { } })
   #middleware = []
+
   constructor(configdata) {
     this.#config = configdata
     this.#bunconfig = new Freebooter(configdata)

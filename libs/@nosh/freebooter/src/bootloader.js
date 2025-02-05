@@ -106,6 +106,18 @@ class Freebooter {
     return this.#routes.pages
   }
 
+  async layout() {
+    if (this.#routes.layout) return this.#routes.layout
+    if (!this.#routes.pages) await this.pageRouting()
+    const layoutPath = this.appPathFor('views')?.shift() + '/_layout'
+    await import(layoutPath).then((layout_import) => {
+      this.#routes.layout = layout_import.default ?? layout_import.Layout ?? layout_import
+    }).catch((e) => {
+      this.logger.data({ layoutPath, error: e }).error('layout.load.error')
+    })
+    return this.#routes.layout
+  }
+
   async dirExists(dir) { return (await $`[[ -d ${dir} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
   async fileExists(file) { return (await $`[[ -f ${file} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
   async allFilesInPath(dir) {

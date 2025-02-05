@@ -1,5 +1,5 @@
 import { pragma } from './pragma'
-import { isBot, blockUnsafe } from './botless'
+import { isBot, blockUnsafe, botless } from './botless'
 const { O_O } = pragma
 import React from 'react'
 import { renderToReadableStream } from 'react-dom/server'
@@ -215,14 +215,13 @@ const handleApiRequest = async (request, requesthandlerdefintion) => {
 
 const layoutfiles = { root: null }
 
-const loadLayout = async (fsrouter) => {
-  if (layoutfiles.root) return layoutfiles.root
-  const layout = fsrouter.match('/layout.jsx')
-  if (!layout) return null
-  const fileLoader = Bun.file(layout.filePath)
-  if (!fileLoader.exists) return null
-  layoutfiles.root = await import(fileLoader.path).then((modules) => modules.default)
-  return layoutfiles.root
+
+// first, let's try just a root tsx/jsx file in (route / filepath) + '_layout.[tj]sx'
+const loadLayout = async (fsrouter, path='/') => {
+  // get root path for fsrouter
+  if (path == '/' && layoutfiles.root) return layoutfiles.root
+  const root_path = fsrouter.match('/_layout').filePath
+  return await import(root_path).then(modules => modules.default).catch(e => null)
 }
 
 const handleFSRouterRequest = async (req, fsrouter) => {
@@ -236,10 +235,9 @@ const handleFSRouterRequest = async (req, fsrouter) => {
     const handler = await import(route.filePath).then(modules => modules.default)
     if (typeof handler !== 'function') return helpers.res.status(500).message('internal.server.error').response
     const result = handler({ helpers, pragma, req, route })
-    console.log(Bun.inspect(result))
     if (!result) return helpers.res.status(500).message('internal.server.error').response
     const layout = await loadLayout(fsrouter)
-    if (!layout) layoutfiles.root = Symbol.for('searched')
+    layoutfiles.root ??= layout ?? Symbol.for('searched')
     if (layout === Symbol.for('searched') || typeof layout !== 'function') return await reactRender(result)
     const wrapped = layout({ helpers, pragma, req, route, children: result })
     return await reactRender(wrapped)
