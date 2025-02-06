@@ -1,8 +1,9 @@
 import { Headline } from '../$/el/headline.tsx'
-import { JSXApp, Style } from '@nosh/compact'
+import { Switch } from '../$/el/switch.tsx'
 
 const Index = () => (
   <>
-  <Headline text="Home" />
+    <Headline text="Home" />
+    <Switch on={true} onSwitch={() => { }} />
 </>) 
 export default Index

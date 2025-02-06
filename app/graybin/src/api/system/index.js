@@ -7,7 +7,5 @@ const heartbeat = async ({ helpers, pragma }) => {
 
 // note there is no point in doing a heartbeat in app, as
 // freebooter has a /nosh/heartbeat endpoint built in
-const system = {
-  heartbeat: { handler: heartbeat, unauthenticated: true }
-}
+const system = { heartbeat: { handler: heartbeat, unauthenticated: true } }
 export { system }

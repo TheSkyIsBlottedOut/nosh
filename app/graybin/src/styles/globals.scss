@@ -1,6 +1,5 @@
 
 @use "sass:meta";
-
 @function google-font($font) {
   @return 'https://fonts.googleapis.com/css?family=#{$font}:ital,wght@1,100..900&display=swap';
 }
@@ -24,10 +23,36 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1rem;
 }
 
-a {
-  color: #333;
-  text-decoration: none;
+a { color: #333; text-decoration: none;
+  &:hover { text-decoration: underline; }
+  &:visited { color: #333; text-decoration: none; }
 }
-a:hover {
-  text-decoration: underline;
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+  border-radius: 34px;
+  background-color: #ccc;
+  /* knob */
+  &::after {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background-color: white;
+    top: 4px;
+    left: 4px;
+    transition: 0.3s;
+  }
+  &.on { background-color: #2196F3; }
+  &.on::after { transform: translateX(26px); }
+  &.off::after { transform: translateX(0); }
+  /* hide input */
+  input { display: none; }
+  /* input:checked */
+  input:checked + .switch::after { transform: translateX(26px); }
+  
 }

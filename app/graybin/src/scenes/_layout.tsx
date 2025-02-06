@@ -1,12 +1,12 @@
-import { StyledApp, JSXApp, type JSXFn } from '@nosh/compact'
+import { StyledApp, JSXApp, type JSXChild } from '@nosh/compact'
 // @ts-expect-error - compilation happens at runtime
 import css from '../styles/globals.css'
-const Layout = async () => {
-  return await (
+const Layout = (args: Record<string, string|React.JSX.Element>) => {
+  const children:React.JSX.Element = args.children as React.JSX.Element
+  return (
     <StyledApp styles={[css]}>
-      <JSXApp>
-        <h1>Graybin</h1>
-      </JSXApp>
+      <h1>Graybin</h1>
+      { children }
     </StyledApp>
   )
 }
