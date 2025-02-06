@@ -1,0 +1,10 @@
+#!/usr/bin/env zsh
+#- nosh sanity:sass - ensure sass is installed
+# &usage: nosh sanity:sass
+
+# &description: nosh sanity:sass ensures that sass is installed on your system.
+
+[[ -x "$(bun run which sass 2>/dev/null)" ]] && exit 0
+bun add sass
+[[ ! -x "$(bun run which sass 2>/dev/null)" ]] && scrawl error sass.install "Could not find sass! Please install it manually." && exit 1
+exit 0

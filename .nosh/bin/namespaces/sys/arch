@@ -7,3 +7,4 @@
 
 export Nosh_UserOS="$(uname -s)"
 export Nosh_SysArch="$(uname -m)"
+exit 0

@@ -1,2 +1,2 @@
 export * from './src/wrapper'
-export * from './src/sassfiles'
+export * from './src/styled-app'

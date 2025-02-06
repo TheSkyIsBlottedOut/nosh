@@ -1,0 +1,9 @@
+#!/usr/bin/env zsh
+#- nosh app:sass - compile sass files to css for all apps
+# &usage: nosh app:sass [app]
+
+# &description: nosh app:sass compiles sass files to css for all apps in the monorepo.E
+[[ -x "$(bun run which sass 2>/dev/null)" ]] || nosh sanity:sass
+[[ -x "$(bun run which sass 2>/dev/null)" ]] || scrawl error sass.preinstall "Terminated early - sass missing." && exit 1
+find app -maxdepth 1 -type d -regex "app.[a-z]*" -exec bun run sass {} \;
+exit 0

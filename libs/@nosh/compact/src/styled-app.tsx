@@ -1,12 +1,13 @@
-// support imports of file types from other sources
+// originally sassfile support; now just give an interface to inject css-compiled styles into the @nosh/compact JSXApp
 // @ts-expect-error - no types for bun
-import Bun, {Glob} from 'bun'
-import sass from 'sass'
-import { JSXApp, Style, JSXChild, JSXFn } from './wrapper'
+import Bun from 'bun'
+import { JSXApp, Style, JSXChild } from './wrapper'
 const HasRun = { sass: false }
 const initSass = async (app_path: string) => {
   if (HasRun.sass) return
-  await Bun.$`sass ${app_path}`
+  try {
+    await Bun.$`nosh app:sass`
+  } catch (e) { console.log(`Error running sass: ${e}`) }
   HasRun.sass = true
 }
 

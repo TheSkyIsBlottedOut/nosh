@@ -6,7 +6,7 @@
 
 __find_installer() {
   local installler="$1"
-  [[ -z "$(which $installer &2> /dev/null)" ]] && return 1
+  [[ -z "$(which $installer 2> /dev/null)" ]] && return 1
   return 0
 }
 
@@ -26,7 +26,7 @@ if [[ $WriteNewConfig -eq 86 ]]; then
     __find_installer "pkg" && yq w -i "$NoshSysConfig" "system.installer" "pkg install"
     [[ -z "$(yq r "$NoshSysConfig" "system.installer")" ]] && scrawl error nosh.install.installer "No installers found for mac. Installing homebrew."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    [[ -z "$(which brew &2> /dev/null)" ]] && scrawl error nosh.install.installer "Homebrew not installing!. Exiting." && exit 1
+    [[ -z "$(which brew 2> /dev/null)" ]] && scrawl error nosh.install.installer "Homebrew not installing!. Exiting." && exit 1
     InstallCommand="brew install"
     yq w -i "$NoshSysConfig" "system.installer" "brew install"
   elif [[ -z "$(uname -s)" == "Linux" ]]; then

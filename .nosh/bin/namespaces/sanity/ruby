@@ -1,18 +1,37 @@
-#!/usr/bin/env zsh
-
-if [[ -z "$(which ruby &2>/dev/null)" ]]; then
+if [[ -z "$(which ruby 2>/dev/null)" ]]; then
   scrawl info nosh.sanity.ruby "Ruby not found. Installing."
-  [[ -z $(which apt) ]] && apt install ruby-full && exit 0
+  if [[ -n "$(which apt 2>/dev/null)" ]]; then
+    apt install ruby-full && exit 0
+  fi
   nosh sanity:install ruby
-  $( uname -a | grep -q Linux ) && nosh sanity:install ruby-dev &2>/dev/null
-  nosh sanity:install ruby-install &2>/dev/null
-  nosh sanity:install chruby &2>/dev/null
-  nosh sanity:install rubygems &2>/dev/null
-  $( which ruby-install &2>/dev/null ) && ruby-install ruby-3.2
-  $( which chruby &2>/dev/null ) && chruby 3.2
-  [[ -z "$(which bundle)"  ]]  $( which gem &2>/dev/null ) && gem install bundler
+  if uname -a | grep -q Linux; then
+    nosh sanity:install ruby-dev 2>/dev/null
+  fi
+  nosh sanity:install ruby-install 2>/dev/null
+  nosh sanity:install chruby 2>/dev/null
+  nosh sanity:install rubygems 2>/dev/null
+  if [[ -n "$(which ruby-install 2>/dev/null)" ]]; then
+    ruby-install ruby-3.2
+  fi
+  if [[ -n "$(which chruby 2>/dev/null)" ]]; then
+    chruby 3.2
+  fi
+  if [[ ! -x "$(which bundle 2>/dev/null)" ]]; then
+    if [[ -x "$(which gem 2>/dev/null)" ]]; then
+      gem install bundler
+    else
+      scrawl error nosh.sanity.ruby "Rubygems not found. Exiting."
+      exit 1
+    fi
+  fi
   bundle init
   bundle add hashie pry open-uri nokogiri faraday
-end
-[[ -z $(ruby -v &2>/dev/null) ]] && scrawl error nosh.sanity.ruby "Ruby not installed. Exiting." && exit 1
+fi
+
+if [[ -z "$(ruby -v 2>/dev/null)" ]]; then
+  scrawl error nosh.sanity.ruby "Ruby not installed after install attempt. Exiting."
+  exit 1
+fi
+
 scrawl info nosh.sanity.ruby "Ruby installed."
+exit 0

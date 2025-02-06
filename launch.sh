@@ -2,6 +2,7 @@
 if [[ -z "$Nosh_Dir" ]]; then
   source .envrc
 fi
+nosh app:sass
 if [[ -z "$1" ]]; then
   echo "Booting default app graybin..."
   bun app/graybin/launch.js
