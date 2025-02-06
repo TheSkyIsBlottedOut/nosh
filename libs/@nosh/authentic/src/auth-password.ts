@@ -79,6 +79,7 @@ const PasswordAuthenticator = (authentic_instance: Authentic) => {
     password = (config.auth.salt) ? `${password}${config.auth.hash.salt}` : await incomprehensibly(password)
     return await scrypt.verifyKdf(Buffer.from(hash, 'hex'), password)
   }
+  return ator
 }
 
 export { PasswordAuthenticator, incomprehensibly }
