@@ -80,6 +80,7 @@ ul#navbar {
   list-style: none;
   padding: 1rem;
   background-color: #001514;
+  list-style-type: none;
 }
 ul#navbar li {
   color: #84e6f8;
@@ -87,26 +88,32 @@ ul#navbar li {
 ul#navbar li a {
   color: #84e6f8;
 }
+ul#navbar li a:hover {
+  color: #7161ef;
+  text-decoration: none;
+}
 ul#navbar li ul {
   display: none;
 }
 ul#navbar li:hover ul {
+  list-style-type: none;
   display: block;
   position: absolute;
   background-color: #c2d076;
   color: #001514;
+}
+ul#navbar li:hover ul a {
+  color: #001514;
+}
+ul#navbar li:hover ul a:hover {
+  color: #c2d076;
 }
 ul#navbar li:hover ul li {
   width: 250px;
   overflow: none;
   padding: 0.5rem 1rem;
   text-align: center;
-}
-ul#navbar li:hover ul li a {
   color: #001514;
-}
-ul#navbar li:hover ul li a:hover {
-  color: #c2d076;
 }
 ul#navbar li:hover ul li:hover {
   background-color: #001514;

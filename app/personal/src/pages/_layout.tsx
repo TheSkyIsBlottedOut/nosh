@@ -10,8 +10,8 @@ const Layout = (args: Record<string, string|React.JSX.Element>) => {
       <ul id="navbar">
         <li><a href="/">Home</a></li>
         <li>Stuff<ul>
-          <li><a href="/page1">Page 1</a></li>
-          <li><a href="/page2">Page 2</a></li>
+          <a href="/page1"><li>Page 1</li></a>
+          <a href="/page2"><li>Page 2</li></a>
         </ul></li>
         <li><a href="/contact">Contact</a></li>
       </ul>

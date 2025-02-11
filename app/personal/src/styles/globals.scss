@@ -49,22 +49,24 @@ ul#navbar {
   list-style: none;
   padding: 1rem;
   background-color: $black;
+  list-style-type: none;
   li {
     color: $blue;
-    a { color: $blue; } 
+    a { color: $blue; &:hover { color: $slate; text-decoration: none; }}
     ul { display: none; }
-    &:hover ul { 
+    &:hover ul {
+      list-style-type: none;
       display: block;
       position: absolute;
       background-color: $citron;
       color: $black;
+      a { color: $black; &:hover { color: $citron; } }
       li {
         width: 250px;
         overflow: none;
         padding: 0.5rem 1rem;
         text-align: center;
-
-        a { color: $black; &:hover { color: $citron; } }
+        color: $black;
         &:hover { background-color: $black; color: $citron; a { color: $citron; } }
       }
     }
