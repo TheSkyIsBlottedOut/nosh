@@ -14,6 +14,6 @@ if [[ ! -d "$Nosh_AppDir/app/$App" ]]; then
   scrawl 'error' "The app '$App' does not exist."
   exit 1
 fi
-
-cd "$Nosh_AppDir/app/$App"
-ls launch.* | bun run
+nosh app:sass
+bun app/$App/launch.js
+exit 0

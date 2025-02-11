@@ -7,14 +7,20 @@
 @import url(google-font('Roboto'));
 @import url(google-font('Open+Sans'));
 @import url(google-font('Doto'));
+/* color theme */
+$black: #001514;
+$citron: #c2d076;
+$cinereous: #93827f;
+$slate: #7161ef;
+$blue: #84e6f8;
 
 * { padding: 0; margin: 0 }
 body {
   font-family: 'Roboto', sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f4f4f4;
+  color: $black;
+  background-color: $blue;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -23,36 +29,10 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1rem;
 }
 
-a { color: #333; text-decoration: none;
-  &:hover { text-decoration: underline; }
-  &:visited { color: #333; text-decoration: none; }
+a { color: $cinereous; text-decoration: none;
+  &:hover { text-decoration: underline; color: $slate;}
+  &:visited { color: $cinereous; text-decoration: none; }
 }
 
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 34px;
-  border-radius: 34px;
-  background-color: #ccc;
-  /* knob */
-  &::after {
-    content: '';
-    position: absolute;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    background-color: white;
-    top: 4px;
-    left: 4px;
-    transition: 0.3s;
-  }
-  &.on { background-color: #2196F3; }
-  &.on::after { transform: translateX(26px); }
-  &.off::after { transform: translateX(0); }
-  /* hide input */
-  input { display: none; }
-  /* input:checked */
-  input:checked + .switch::after { transform: translateX(26px); }
-  
-}
+
+

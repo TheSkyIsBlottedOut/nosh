@@ -6,7 +6,7 @@ const Layout = (args: Record<string, string|React.JSX.Element>) => {
   return (
     <StyledApp styles={[css]}>
       <h1>Graybin</h1>
-      { children }
+      {children}
     </StyledApp>
   )
 }
