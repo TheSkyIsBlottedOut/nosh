@@ -16,10 +16,6 @@ packages:
     access: $anonymous
     publish: $authenticated
     maxusers: 10
-  '@vintage-dogma/*':
-    access: $all
-    publish: $authenticated
-    maxusers: 100
   '**':
     access: $all
     publish: $authenticated

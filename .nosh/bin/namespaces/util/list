@@ -1,5 +1,5 @@
 #!/usr/bin/env zsh
-#- nosh [util:]list [namespace] - list all available commands.
+#- nosh util:list <namespace> - list all available commands.
 Namespace="$1"
 [[ -z "$Namespace" ]] && Namespace="util"
 [[ -z "$LC_ALL" ]] && export LC_ALL="C"
