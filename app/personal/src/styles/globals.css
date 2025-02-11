@@ -1,0 +1,127 @@
+@import url("https://fonts.googleapis.com/css?family=Roboto:ital,wght@1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Open+Sans:ital,wght@1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Doto:ital,wght@1,100..900&display=swap");
+/* color theme */
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #001514;
+  background-color: #84e6f8;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Doto", sans-serif;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+a {
+  color: #93827f;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+  color: #7161ef;
+}
+a:visited {
+  color: #93827f;
+  text-decoration: none;
+}
+
+.slate {
+  color: #7161ef;
+}
+
+.citron {
+  color: #c2d076;
+}
+
+.cinereous {
+  color: #93827f;
+}
+
+.black {
+  color: #001514;
+}
+
+.blue {
+  color: #84e6f8;
+}
+
+.bg-slate {
+  background-color: #7161ef;
+}
+
+.bg-citron {
+  background-color: #c2d076;
+}
+
+.bg-cinereous {
+  background-color: #93827f;
+}
+
+.bg-black {
+  background-color: #001514;
+}
+
+.bg-blue {
+  background-color: #84e6f8;
+}
+
+ul#navbar {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+  padding: 1rem;
+  background-color: #001514;
+}
+ul#navbar li {
+  color: #84e6f8;
+}
+ul#navbar li a {
+  color: #84e6f8;
+}
+ul#navbar li ul {
+  display: none;
+}
+ul#navbar li:hover ul {
+  display: block;
+  position: absolute;
+  background-color: #c2d076;
+  color: #001514;
+}
+ul#navbar li:hover ul li {
+  width: 250px;
+  overflow: none;
+  padding: 0.5rem 1rem;
+  text-align: center;
+}
+ul#navbar li:hover ul li a {
+  color: #001514;
+}
+ul#navbar li:hover ul li a:hover {
+  color: #c2d076;
+}
+ul#navbar li:hover ul li:hover {
+  background-color: #001514;
+  color: #c2d076;
+}
+ul#navbar li:hover ul li:hover a {
+  color: #c2d076;
+}
+
+h1#layout-headline {
+  padding: 0px;
+  margin: 0px;
+  background-color: #001514;
+  color: #c2d076;
+  text-align: center;
+}
+
+/*# sourceMappingURL=globals.css.map */

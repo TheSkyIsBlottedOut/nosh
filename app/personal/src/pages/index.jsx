@@ -1,0 +1,1 @@
+export default function Home() { return (<h3>Pragma</h3>) }

@@ -1,0 +1,80 @@
+
+@use "sass:meta";
+@function google-font($font) {
+  @return 'https://fonts.googleapis.com/css?family=#{$font}:ital,wght@1,100..900&display=swap';
+}
+
+@import url(google-font('Roboto'));
+@import url(google-font('Open+Sans'));
+@import url(google-font('Doto'));
+/* color theme */
+$black: #001514;
+$citron: #c2d076;
+$cinereous: #93827f;
+$slate: #7161ef;
+$blue: #84e6f8;
+
+* { padding: 0; margin: 0 }
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: $black;
+  background-color: $blue;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Doto', sans-serif;
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+a { color: $cinereous; text-decoration: none;
+  &:hover { text-decoration: underline; color: $slate;}
+  &:visited { color: $cinereous; text-decoration: none; }
+}
+.slate { color: $slate; }
+.citron { color: $citron; }
+.cinereous { color: $cinereous; }
+.black { color: $black; }
+.blue { color: $blue; }
+.bg-slate { background-color: $slate; }
+.bg-citron { background-color: $citron; }
+.bg-cinereous { background-color: $cinereous; }
+.bg-black { background-color: $black; }
+.bg-blue { background-color: $blue; }
+ul#navbar {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+  padding: 1rem;
+  background-color: $black;
+  li {
+    color: $blue;
+    a { color: $blue; } 
+    ul { display: none; }
+    &:hover ul { 
+      display: block;
+      position: absolute;
+      background-color: $citron;
+      color: $black;
+      li {
+        width: 250px;
+        overflow: none;
+        padding: 0.5rem 1rem;
+        text-align: center;
+
+        a { color: $black; &:hover { color: $citron; } }
+        &:hover { background-color: $black; color: $citron; a { color: $citron; } }
+      }
+    }
+    
+  }
+}
+h1#layout-headline {
+  padding: 0px;
+  margin: 0px;
+  background-color: $black;
+  color: $citron;
+  text-align: center;
+}

@@ -5,12 +5,16 @@
 # &... it will create a new directory for the app and set up the necessary files.
 
 [[ -z "$1" ]] && scrawl error nosh.usage "nosh init:app requires an application name." && exit 1
-AppName=$(echo $1 | tr '[:upper:]' '[:lower:]' |  tr -d '[:punct:]' | tr ' ' '-' )
+AppName="$(echo "$1" | tr '[:upper:]' '[:lower:]' |  tr -d '[:punct:]' | tr ' ' '-' )"
 AppDir="app/$AppName"
-[[ -d "$AppDir" ]] && scrawl error nosh.app "App $AppName already exists." && exit 1
+if [[ -d "$AppDir" ]]; then
+  $(which scrawl) "error" "nosh.app" "App $AppName already exists."
+  exit 1
+fi
 mkdir -p "$AppDir"
-cp -r "$Nosh_BinDir/templates/app"/* "$AppDir"
-scrawl info nosh.app "App $AppName created successfully."
+cp -r "$Nosh_Config/template/app/" "$AppDir"
+echo "App $AppName created successfully." 1>&2
+#scrawl "info" "nosh.app" "App $AppName created successfully."
 # TODO: Alter values in config files to match the app name.
 # TODO: Update tsconfig/jsconfig files.
 exit 0

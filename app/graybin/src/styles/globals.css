@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Roboto:ital,wght@1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:ital,wght@1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Doto:ital,wght@1,100..900&display=swap");
+/* color theme */
 * {
   padding: 0;
   margin: 0;
@@ -10,8 +11,8 @@ body {
   font-family: "Roboto", sans-serif;
   font-size: 16px;
   line-height: 1.5;
-  color: #333;
-  background-color: #f4f4f4;
+  color: #001514;
+  background-color: #84e6f8;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -21,12 +22,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 a {
-  color: #333;
+  color: #93827f;
   text-decoration: none;
 }
-
 a:hover {
   text-decoration: underline;
+  color: #7161ef;
+}
+a:visited {
+  color: #93827f;
+  text-decoration: none;
 }
 
 /*# sourceMappingURL=globals.css.map */
