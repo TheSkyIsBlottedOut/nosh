@@ -23,7 +23,7 @@ const TheIndomitable = () => {
       <p>the end of time</p>
       <p>come to me when you are hollow</p>
       <p>and i will knit your bones</p>
-      <div class="edgewood" style={{ float: 'left' }}></div>
+      <div style={{ float: 'left', backgroundColor: '#fff' }}><img src="edgewood.png"/></div>
     </div>
   )
 }
