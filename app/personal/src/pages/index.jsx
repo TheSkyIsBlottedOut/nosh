@@ -10,7 +10,7 @@ const TheUnconquerable = () => {
       <p>to the unconquerable pragma</p>
       <p>this is a test site</p>
       <p>where we demo things</p>
-      <div style={{ float: 'right', backgroundColor: '#fff' }}><img src="edgewood.png"/></div>
+      <div style={{ float: 'right', backgroundColor: '#fff' }}><img src="public/edgewood.png"/></div>
     </div>
   )
 }
@@ -23,7 +23,7 @@ const TheIndomitable = () => {
       <p>the end of time</p>
       <p>come to me when you are hollow</p>
       <p>and i will knit your bones</p>
-      <div style={{ float: 'left', backgroundColor: '#fff' }}><img src="edgewood.png"/></div>
+      <div style={{ float: 'left', backgroundColor: '#fff' }}><img src="public/edgewood.png"/></div>
     </div>
   )
 }
