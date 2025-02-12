@@ -10,3 +10,4 @@ dist/*
 .nosh/etc/cert/pub/*
 .nosh/etc/cert/priv/*
 .nosh/etc/cert/ssl/*
+app/*

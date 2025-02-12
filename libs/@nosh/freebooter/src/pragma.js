@@ -46,6 +46,7 @@ class Pragma {
     this.#logger = new Logger(app); this.#appname = app
   }
   get appname() { return this.#appname }
+  get config() { return }
 }
 
 const pragma = new Pragma()

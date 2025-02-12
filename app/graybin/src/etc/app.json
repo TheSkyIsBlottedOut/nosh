@@ -7,7 +7,7 @@
         "ssl": {
           "enabled": true,
           "configuration": "nosh",
-          "useLocalhostCert": true
+          "useLocalCert": true
         },
         "log": { 
           "console": {"enabled": true, "level": "debug"},
