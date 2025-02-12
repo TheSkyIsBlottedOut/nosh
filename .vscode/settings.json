@@ -17,5 +17,6 @@
     "other": true,
     "comments": false,
     "strings": false
-  }
+  },
+  "fixJson.indentationSpaces": 2
 }

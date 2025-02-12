@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Roboto:ital,wght@1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:ital,wght@1,100..900&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Doto:ital,wght@1,100..900&display=swap");
+@import url("https://fonts.googleapis.com/css?family=Shadows+Into+Light+Two:ital,wght@1,100..900&display=swap");
 /* color theme */
 * {
   padding: 0;
@@ -129,6 +130,36 @@ h1#layout-headline {
   background-color: #001514;
   color: #c2d076;
   text-align: center;
+}
+
+.fader {
+  opacity: 0.3;
+  font-family: "Shadows Into Light Two", cursive;
+  font-size: 1.5rem;
+  letter-spacing: 0.11rem;
+  transition: opacity 2s;
+  animation-timing-function: ease-in-out;
+  margin: 2rem 0;
+  background-color: #001514;
+  padding: 0 1rem;
+  color: #7161ef;
+}
+.fader:hover {
+  opacity: 1;
+}
+.fader h1, .fader h2, .fader h3, .fader h4, .fader h5, .fader h6 {
+  color: #c2d076;
+}
+
+.edgewood {
+  content: '<img src="/edgewood.png" alt="Edgewood" />';
+  background-color: #c2d076;
+  /* the image is 800x600: maintain aspect ratio of 4:3 */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 300px;
+  width: 400px;
 }
 
 /*# sourceMappingURL=globals.css.map */
