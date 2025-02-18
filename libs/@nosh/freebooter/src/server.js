@@ -71,7 +71,7 @@ class BunServer {
   }
 
   get pagerouter() { return this.#bunconfig.routes.pages }
-
+  async statics() { return await this.#bunconfig.routes.static }
   async start() {
     this.logger.info('starting.service')
     await this.preloadService()
@@ -81,12 +81,13 @@ class BunServer {
   async initServer() {
     const wconfig = this.#bunconfig.webConfig
     this.loadMiddleware()
+    const statics = await this.statics()
     this.#server = Bun.serve({
       port: wconfig.port ?? 3000,
       host: wconfig.host ?? 'localhost',
       static: {
-        ...this.#bunconfig.routes.static,
-        '/nosh/heartbeat': new Response('ok', { status: 200 })
+        ...statics,
+        '/nosh/heartbeat': new Response('ok', { status: 200 }),
       },
       logger: this.logger.info,
       fetch: async (request) => {
