@@ -106,17 +106,19 @@ class NeoArray extends NeoCore {
   findLast(fnOrObj) { return this.array.reverse().find(fnOrObj) }
   find(fnOrObj) { return this.array.select(x => typeof fnOrObj === 'function' ? !!fnOrObj(x) : x === fnOrObj) }
   map(fn) { return this.array.map(fn) }
-  push(...values) { this.array.push(...(this.defaultTransform(values))) }
+  push(...values) { this.array.push(...(this.defaultTransform(values))); this.#typecast() }
   concat(...values) { return this.array.concat(...this.defaultTransform(values)) }
-  pop() { return this.array.pop() }
-  shift() { return this.array.shift() }
-  unshift(...values) { this.array.unshift(...this.defaultTransform(values)) }
+  pop() { const val = this.array.pop(); this.#typecast(); return val }
+  shift() { const val = this.array.shift(); this.#typecast(); return val }
+  unshift(...values) { this.array.unshift(...this.defaultTransform(values)); this.#typecast() }
   slice(start, end) { return this.array.slice(start, end) }
   join(sep) { return new NeoString(this.array.join(sep)) }
   get joined() { return this.join('') }
   get last() { return this.at(-1) }
   get isEmpty() { return this.array.length === 0 }
   get notEmpty() { return this.array.length > 0 }
+  get empty() { return this.isEmpty }
+  get size() { return this.array.length }
   includes(...values) { return values.every(v => this.array.includes(v)) }
   indexOf(value) { return this.array.indexOf(value) }
   indicesOf(value) { return this.array.reduce((acc, v, i) => v === value ? [...acc, i] : acc, []) }
@@ -134,6 +136,8 @@ class NeoArray extends NeoCore {
       return acc;
     }, this.#N())
   }
+  reduce(...args) { return this.array.reduce(...args) }
+  inject(...args) { return this.reduce(...args) }
 
   get groupIndex() {
     return this.array.reduce((acc, v, i) => {
@@ -144,14 +148,17 @@ class NeoArray extends NeoCore {
     }, this.#N())
   }
   #typecast() {
+    // set accessors
+    this.#arrayAccess()
+    // determine type
     this.type = ['array']
     if (this.array.every(Array.isArray)) {
       this.type.push('dimensional')
       if (this.array.reduce((s,i) => { return i.every(x => typeof x === 'number') && s}, true)) this.type.push('matrix')
       const subtypes = this.array.map(i => this.#N(i).#typecast())
-      let ptr = this.array
+      let ptr = this.array ?? []
       let dimensions = 1
-      while (ptr.every(Array.isArray) && ptr.every(i => i.length == ptr[0].length)) {
+      while (ptr && Array.isArray(ptr) && ptr.every(i => !!i && Array.isArray(i) && i.length == ptr[0].length)) {
         ptr = ptr[0]
         dimensions++
       }
@@ -184,6 +191,31 @@ class NeoArray extends NeoCore {
       if (smallest >= -9223372036854775808 && largest <= 9223372036854775807) this.type.push('long', 'signed')
       if (this.array.flat().every(i => i % 1 === 0)) this.type.push('integer')
       if (this.array.flat().every(i => i % 1 !== 0)) this.type.push('float')
+    }
+  }
+
+  #arrayAccess() {
+    // clean up any old accessors
+    Object.keys(this).filter(k => /^-?\d+/.test(k)).forEach(k => delete this[k])
+    // set [ ] accessors for objects in this.array
+    for (let i = 0; i < this.array.length; i++) {
+      Object.defineProperty(this, i, {
+        get: () => this.array[i],
+        set: (v) => this.array[i] = v,
+        rewrite: (v) => this.array[i] = this.defaultTransform(v),
+        configurable: true,
+        enumerable: true
+      })
+    }
+    // set -1, -2, -3, etc. accessors for objects in this.array
+    for (let i = 1; i <= this.array.length; i++) {
+      Object.defineProperty(this, -i, {
+        get: () => this.array[this.array.length - i],
+        set: (v) => this.array[this.array.length - i] = v,
+        rewrite: (v) => this.array[this.array.length - i] = this.defaultTransform(v),
+        configurable: true,
+        enumerable: true
+      })
     }
   }
 
@@ -466,7 +498,8 @@ class NeoArray extends NeoCore {
     })
     return lexemes;
   }
-
+  toString() { return `NeoArray (${this.length}): [${this.array.join(' ,')}]` }
+  log() { console.log(this.toString()); return this }
   get empty() { return this.array.length === 0 }
   get hexChars() {
     if (!this.isAnyType('character', 'byte')) throw new Error('Cannot convert non-character arrays to hex')

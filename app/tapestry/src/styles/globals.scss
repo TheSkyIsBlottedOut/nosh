@@ -1,5 +1,5 @@
+@use "sass:map";
 @mixin google-font($font) {@import url('https://fonts.googleapis.com/css?family=' + $font);}
-
 @include google-font('Italianno'); /* calligraphy font */
 @include google-font('Fleur+De+Leah'); /* script font */
 @include google-font('Grenze+Gotisch'); /* gothic font */
@@ -63,12 +63,12 @@ $themes: (
     色: (光: #edede9, 暗: #554441 )
   )
 );
-@function elder-brother($theme) { @return map-get($themes, $theme, 兄弟, 本音);}
-@function younger-brother($theme) { @return map-get($themes, $theme, 兄弟, 建前);}
-@function elder-sister($theme) { @return map-get($themes, $theme, 兄妹, 本音); }
-@function younger-sister($theme) { @return map-get($themes, $theme, 兄妹, 建前); }
-@function themed-light($theme) { @return map-get($themes, $theme, 色, 光);}
-@function themed-dark($theme) { @return map-get($themes, $theme, 色, 暗);}
+@function elder-brother($theme) { @return map.get($themes, $theme, 兄弟, 本音);}
+@function younger-brother($theme) { @return map.get($themes, $theme, 兄弟, 建前);}
+@function elder-sister($theme) { @return map.get($themes, $theme, 兄妹, 本音); }
+@function younger-sister($theme) { @return map.get($themes, $theme, 兄妹, 建前); }
+@function themed-light($theme) { @return map.get($themes, $theme, 色, 光);}
+@function themed-dark($theme) { @return map.get($themes, $theme, 色, 暗);}
 @mixin fwb($fgcolor, $bgcolor) { color: $fgcolor; background-color: $bgcolor; }
 @mixin colorfade($color1, $color2) {
   color: $color1; transition: color 1s cubic-bezier(0.165, 0.84, 0.44, 1), background-color 1s linear;

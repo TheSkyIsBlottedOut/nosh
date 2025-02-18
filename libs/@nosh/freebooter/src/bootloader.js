@@ -85,16 +85,15 @@ class Freebooter {
 
   get pathToRepo() { this.#paths.repo ??= this.#config.appRoot.split(/\/(?:app|dist)\/?/)[0]; return this.#paths.repo }
   get pathToApp() { this.#paths.app ??= this.#config.appRoot ?? this.#paths.repo + '/app/' + this.appName; return this.#paths.app }
-
+  get rootPath() { return (this.#config?.routes?.prefix) ? [this.pathToApp, this.#config.routes.prefix].join('/') : this.pathToApp }
   appPathFor(...ptrkeys) {
-    console.log('appPathFor', ptrkeys)
+    // return the app-relative path for a given config key
     this.logger.data({ ptrkeys }).trace('boot.sequence.fsdata.app.path')
     // returns one or more paths based on the app's configuration
     const path_values = ptrkeys.reduce((acc, key) => acc[key] ?? {}, this.#config.routes)
-    if (!path_values || path_values.size < 1) return Promise.resolve([])
-    const app_prefix = this.pathToApp + `/${this.#config.routes.prefix ?? '/'}`
+    if (!path_values || path_values.size < 1) return []
     const paths = (Array.isArray(path_values)) ? path_values : [path_values]
-    return paths.map(path => [app_prefix, path].join('/').replaceAll(/\/+/g, '/'))
+    return paths.map(i => this.expandDir(i))
   }
 
   pageRouting() { // JSX view paths ('pages routing')
@@ -117,46 +116,76 @@ class Freebooter {
     })
     return this.#routes.layout
   }
-
-  async dirExists(dir) { return (await $`[[ -d ${dir} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
-  async fileExists(file) { return (await $`[[ -f ${file} ]] && echo 'exists'`.text()?.trim?.()) === 'exists' }
-  async allFilesInPath(dir) {
-    if (!dir.startsWith('/')) dir = `${this.appRoot}/${dir}`
-    if (!await this.dirExists(dir)) return []
-    return (await $`find ${dir} -type f`.text()).split(/\n/).filter(f => f.length > 0 && /\w/.test(f))
+  async dirExists(d) {
+    d = this.expandDir(d)
+    const result = await $`[[ -d "${d}" ]] && printf "y" || printf "n"`.text()
+    return result === 'y'
+  }
+  async fileExists(f) {
+    f = this.expandDir(f)
+    const result = await $`[[ -f "${f}" ]] && printf "y" || printf "n"`.text()
+    return result === 'y'
+  }
+  expandDir(d) { if (!d.startsWith('/')) d = [this.rootPath, d].join('/').replaceAll(/\/+/g, '/'); return d }
+  async allFilesInDir(dir) {
+    const _exists = await this.dirExists(dir)
+    if (!_exists) return []
+    const files = (await $`find "${this.expandDir(dir)}" -type f`.text()).split(/\n+/).filter(f => /\w/.test(f))
+    console.log('allFilesInDir', files)
+    return neo(files).flatten
   }
 
-  async staticFiles(dir) { // may be replaceable by fsrouting - see bun docs on assets
-    const _ptrlst = neo(this.appPathFor('static', 'paths'))
-    if (_ptrlst.length === 0) return Promise.resolve([])
-    const _paths = _ptrlst.map(async (path) => await this.allFilesInPath(path))
-    return neo(await Promise.allSettled(_paths)).flatten
+  async allFilesInPath(dir, dir2 = undefined) {
+    if (typeof dir === 'string' && typeof dir2 === 'string') dir = await this.appPathFor(dir, dir2)
+    if (!Array.isArray(dir)) dir = [dir]
+    dir = dir.filter(d => /\w/.test(d))
+    const _files = []
+    for (let _dir of dir) {
+      const _f = await this.allFilesInDir(_dir)
+      _f.forEach(f => _files.push(f))
+    }
+    return neo(_files)
   }
+
+  // may be replaceable by fsrouting - see bun docs on asset routing
+  async staticFiles(dir) {return await this.allFilesInPath(dir ?? 'public')}
 
   async staticRouting() {
     const _flattened = await this.staticFiles()
+    console.log('Static files', _flattened)
     this.logger.data({ static: _flattened.array }).info('static.files')
     this.#routes.static = _flattened.reduce(async (acc, file) => {
       console.log('Static file', file)
       try {
+        // Bun.file interface is new Response(await Bun.file(file).bytes(), { headers: { 'Content-Type': Bun.file(file).mimetype } })
         const f = Bun.file(file)
         // key value should only be the path within the app
         const key = file.replace(this.pathToApp, '')
-        acc[key] = new Response(f.read(), { headers: { 'Content-Type': f.mimetype } })
-      } catch (error) { this.logger.data({ file, error }).error('static.file.cannot_load') }
+        console.log('filekey', key)
+        acc[key] = new Response(await f.bytes(), { headers: { 'Content-Type': f.mimetype } })
+      } catch (error) {
+        console.log(error)
+        this.logger.data({ file, error }).error('static.file.cannot_load')
+      }
       return acc
     }, {})
-    return Promise.resolve(this.#routes.static)
+    return this.#routes.static
   }
 
 
   async namedRouting() {
     pragma.logger.trace('boot.sequence.namedroutes.load.start')
-    const _namedroutes = await this.appPathFor('routes', 'named')
-    const _this = this
-    const _neoroutes = neo(_namedroutes).compact.filter((path) => _this.fileExists(path))
-    if (_neoroutes.length === 0) return Promise.resolve([])
-    const _routes = _neoroutes.map(async (path) => await import(path).then(({ routes }) => routes))
+    const _namedroutes = await this.appPathFor('named', 'paths')
+    const _neoroutes = []
+    for (const path of _namedroutes) {
+      if (!/\.[tj]sx?$/.test(path)) continue
+      const _exists = await this.fileExists(path)
+      if (!_exists) this.logger.data({ path }).warn('named.route.missing')
+      else _neoroutes.push(path)
+    }
+    if (_neoroutes.length === 0) return []
+    const _routes = await _neoroutes.map(async (path) => await import(path).then(({ routes }) => routes))
+    console.log('Named routes', _routes)
     pragma.logger.data({ namedroutes: _routes }).trace('boot.sequence.namedroutes.load.end')
     this.#routes.defined = await Promise.allSettled(_routes).then((results) => results.map((r) => r.value)).catch(e => [])
     this.#routes.defined = this.#routes.defined.filter(r => r)
